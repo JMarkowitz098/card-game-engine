@@ -2,18 +2,24 @@ namespace CardGame.Engine.Tests;
 
 public class PlayerStateTests
 {
+    private readonly PlayerState _player;
+
+    public PlayerStateTests()
+    {
+        _player = new PlayerState();
+        // _player = new PlayerState(new List<BattleCard>());
+    }
     [Fact]
     public void TakeDamage_ReducesHealthByAmount_ReturnsDamageTaken()
     {
         // Arrange
-        var player = new PlayerState();
         var damage = 2;
 
         // Act
-        var result = player.TakeDamage(damage);
+        var result = _player.TakeDamage(damage);
 
         // Assert
-        Assert.Equal(8, player.CurrentHealth);
+        Assert.Equal(8, _player.CurrentHealth);
         Assert.Equal(2, result);
     }
 
@@ -21,14 +27,13 @@ public class PlayerStateTests
     public void TakeDamage_ExceedsStartingHealth_ClampsAtZero()
     {
         // Arrange
-        var player = new PlayerState();
         var damage = 12;
 
         // Act
-        var result = player.TakeDamage(damage);
+        var result = _player.TakeDamage(damage);
 
         // Assert
-        Assert.Equal(0, player.CurrentHealth);
+        Assert.Equal(0, _player.CurrentHealth);
         Assert.Equal(10, result);
     }
 
@@ -36,14 +41,13 @@ public class PlayerStateTests
     public void TakeDamage_ExceedsCurrentHealth_ClampsAtZero()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        player.TakeDamage(5);
-        var result = player.TakeDamage(10);
+        _player.TakeDamage(5);
+        var result = _player.TakeDamage(10);
 
         // Assert
-        Assert.Equal(0, player.CurrentHealth);
+        Assert.Equal(0, _player.CurrentHealth);
         Assert.Equal(5, result);
     }
 
@@ -51,14 +55,13 @@ public class PlayerStateTests
     public void IncreaseMaxEnergy_IncreasesEnergyByAmount_ReturnsEnergyIncreaseAmount()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        var result = player.IncreaseMaxEnergy(1);
+        var result = _player.IncreaseMaxEnergy(1);
 
         // Assert
-        Assert.Equal(2, player.MaxEnergy);
-        Assert.Equal(1, player.CurrentEnergy);
+        Assert.Equal(2, _player.MaxEnergy);
+        Assert.Equal(1, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -66,14 +69,13 @@ public class PlayerStateTests
     public void GainEnergy_IncreasesEnergyByAmount_ReturnsEnergyIncreaseAmount()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        player.IncreaseMaxEnergy(1);
-        var result = player.GainEnergy(1);
+        _player.IncreaseMaxEnergy(1);
+        var result = _player.GainEnergy(1);
 
         // Assert
-        Assert.Equal(2, player.CurrentEnergy);
+        Assert.Equal(2, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -81,14 +83,13 @@ public class PlayerStateTests
     public void GainEnergy_ExceedsMaxEnergy_ReturnsEnergyIncreaseAmount()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        player.IncreaseMaxEnergy(1);
-        var result = player.GainEnergy(5);
+        _player.IncreaseMaxEnergy(1);
+        var result = _player.GainEnergy(5);
 
         // Assert
-        Assert.Equal(2, player.CurrentEnergy);
+        Assert.Equal(2, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -96,13 +97,12 @@ public class PlayerStateTests
     public void TryUseEnergy_ReducesEnergyByAmount_ReturnsTrue()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        var result = player.TryUseEnergy(1);
+        var result = _player.TryUseEnergy(1);
 
         // Assert
-        Assert.Equal(0, player.CurrentEnergy);
+        Assert.Equal(0, _player.CurrentEnergy);
         Assert.True(result);
     }
 
@@ -110,13 +110,12 @@ public class PlayerStateTests
     public void TryUseEnergy_FailsToReduceEnergy_ReturnsFalse()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        var result = player.TryUseEnergy(5);
+        var result = _player.TryUseEnergy(5);
 
         // Assert
-        Assert.Equal(1, player.CurrentEnergy);
+        Assert.Equal(1, _player.CurrentEnergy);
         Assert.False(result);
     }
 
@@ -124,15 +123,16 @@ public class PlayerStateTests
     public void ReplenishEnergy_SetsCurrentEnergyToMaxEnergy()
     {
         // Arrange
-        var player = new PlayerState();
 
         // Act
-        player.IncreaseMaxEnergy(2);
-        player.TryUseEnergy(1);
-        player.ReplenishEnergy();
+        _player.IncreaseMaxEnergy(2);
+        _player.TryUseEnergy(1);
+        _player.ReplenishEnergy();
 
         // Assert
-        Assert.Equal(3, player.CurrentEnergy);
-        Assert.Equal(player.MaxEnergy, player.CurrentEnergy);
+        Assert.Equal(3, _player.CurrentEnergy);
+        Assert.Equal(_player.MaxEnergy, _player.CurrentEnergy);
     }
+
+    
 }

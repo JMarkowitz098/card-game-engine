@@ -4,5 +4,6 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp"
   },
   "omnisharp.enableEditorConfigSupport": true,
-  "omnisharp.enableRoslynAnalyzers": true
+  "omnisharp.enableRoslynAnalyzers": true,
+  "dotnet.codeLens.enableReferencesCodeLens": false
 }
