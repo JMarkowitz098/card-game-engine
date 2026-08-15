@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio / editor tooling
+.vs/
+.vscode/
+*.user
+
+# Test results
+TestResults/
+*.trx
+
+# NuGet
+*.nupkg
+
+# OS cruft
+.DS_Store
