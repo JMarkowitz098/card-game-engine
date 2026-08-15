@@ -4,7 +4,8 @@ obj/
 
 # Visual Studio / editor tooling
 .vs/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.user
 
 # Test results

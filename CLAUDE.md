@@ -6,6 +6,8 @@ A digital video game version of a TCG (trading card game). Starting as local sin
 
 The user is learning C#/.NET on this project. **Do not write code or edit/create any files unless explicitly told to.** Default mode is advice, explanation, and answering questions — the user wants to write the code themselves. Only make file edits when the user explicitly asks for them in that turn.
 
+**Never run `git commit` (or push) on this project, full stop.** No exception via implicit/collaborative phrasing — only if explicitly overridden by the user in that exact moment.
+
 ## Stack
 
 - **Language:** C# throughout — both the rules engine and the game client.
@@ -51,3 +53,25 @@ tests/
 - [ ] Design the actual card/effect data schema
 - [ ] Define the concrete intent/event contract
 - [ ] Finalize Godot vs. Unity for the client
+
+## Card Game Mechanics
+- Deck consists of single leader cards and 40 battle cards
+- There are 4 elements (earth, fire, wind, water). For now let's use colors to keep things simple(earth - orange, fire - red, wind - green, water - blue)
+- Each leader can have 1 or 2 elements. The deck can only have cards of the leader's elements. Each leader has an effect
+- Leader starts with 10 health and 1 energy. 
+- Energy replenishes at the start of every turn (both your turn and the opponents)
+- Each battle card can be used to attack or defend. They have an attack value and a defend value. They also have an energy cost value and an energy charge value. The charge value raises your max energy by that amount, but only when attacking. They also might have a special effect
+- When attacked, you mitigate the damage by defending. If you don't defend, you take all the damage. When defending with the same element as the attack, it costs half the energy
+
+### Match example
+Guide: Card Name(Color/Cost/Charge/Attack/Defense)
+- Each player puts out their leader and draws 5 cards. Option to mulligan once
+- Player 1 plays "Spark(Red/1/1/2/1)". Player 2 counters with Breeze(Green/1/1/2/1). Player 2 takes 1 damage. Player 1 is out of energy, but now has a max if 2.
+- Keep going back and forth until someone's health reaches 0
+
+### Possible Special Effects
+- Increase/decrease you or your opponenets energy/max energy
+- When attacking, unblockable
+- When defending, reduce damage to 0
+- Leader effect: when attacking get extra energy
+- Leader effect: when defending, gain an extra energy

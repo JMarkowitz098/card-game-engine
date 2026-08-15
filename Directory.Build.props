@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Enables .NET's built-in Roslyn code-quality analyzers for every project in the solution -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <!-- Makes .editorconfig style violations show up as build warnings, not just editor squiggles -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+</Project>
