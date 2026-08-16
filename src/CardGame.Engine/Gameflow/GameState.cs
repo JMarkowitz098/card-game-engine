@@ -96,6 +96,11 @@ public class GameState
         return new IntentResult(true, events);
     }
 
+    public PlayerState GetPlayer(PlayerId id)
+    {
+        return id == PlayerId.PlayerA ? PlayerA : PlayerB;
+    }
+
     private void ReadyNewTurn(PlayerState defender, List<IGameEvent> events, DeclareDefenseIntent intent)
     {
         Phase = TurnPhase.ReadyToAttack;
@@ -118,11 +123,6 @@ public class GameState
     private bool CanDefend(DeclareDefenseIntent intent)
     {
         return Phase == TurnPhase.ReadyToDefend && intent.DefendingPlayerId != ActivePlayer;
-    }
-
-    private PlayerState GetPlayer(PlayerId id)
-    {
-        return id == PlayerId.PlayerA ? PlayerA : PlayerB;
     }
 
     private static PlayerId GetOpponentId(PlayerId id)
