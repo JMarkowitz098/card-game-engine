@@ -50,30 +50,37 @@ public class GameState
 
     public IntentResult DeclareDefense(DeclareDefenseIntent intent)
     {
-        var card = intent.Card;
+        var defender = GetPlayer(intent.DefendingPlayerId);
+        var events = new List<IGameEvent>();
+
         if (!CanDefend(intent))
         {
             return IntentResultFail();
         }
 
-        var defender = GetPlayer(intent.DefendingPlayerId);
-
-        if (!CanUseCard(defender, card))
+        if (intent.Card != null)
         {
-            return IntentResultFail();
+            var card = intent.Card;
+
+            if (!CanUseCard(defender, card))
+            {
+                return IntentResultFail();
+            }
+
+            events.Add(new DefenseDeclared(intent.DefendingPlayerId, card.Defense));
+            events.Add(new EnergySpent(intent.DefendingPlayerId, card.Cost));
+
+            defender.DiscardCard(card);
+            events.Add(new CardDiscarded(intent.DefendingPlayerId, card.Name));
         }
-
-        var events = new List<IGameEvent> { new DefenseDeclared(intent.DefendingPlayerId, card.Defense) };
-        events.Add(new EnergySpent(intent.DefendingPlayerId, card.Cost));
-
-        defender.DiscardCard(card);
-        events.Add(new CardDiscarded(intent.DefendingPlayerId, card.Name));
 
         if (_pendingAttackCard == null)
         {
             throw new InvalidOperationException();
         }
-        int damage = CombatResolver.ResolveBattle(_pendingAttackCard, card);
+
+        int damage = CombatResolver.ResolveBattle(_pendingAttackCard, intent.Card);
+
         defender.TakeDamage(damage);
         events.Add(new DamageDealt(intent.DefendingPlayerId, damage));
 

@@ -1,3 +1,3 @@
 namespace CardGame.Engine;
 
-public record DeclareDefenseIntent(PlayerId DefendingPlayerId, BattleCard Card);
+public record DeclareDefenseIntent(PlayerId DefendingPlayerId, BattleCard? Card);
