@@ -4,10 +4,16 @@ public class PlayerStateTests
 {
     private readonly PlayerState _player;
 
+    private static List<BattleCard> CreateDummyDeck(int count)
+    {
+        return Enumerable.Range(0, count)
+            .Select(i => new BattleCard($"card{i}", Element.Scor, 1, 1, 1, 1))
+            .ToList();
+    }
+
     public PlayerStateTests()
     {
-        _player = new PlayerState();
-        // _player = new PlayerState(new List<BattleCard>());
+        _player = new PlayerState(CreateDummyDeck(40));
     }
     [Fact]
     public void TakeDamage_ReducesHealthByAmount_ReturnsDamageTaken()
@@ -134,5 +140,45 @@ public class PlayerStateTests
         Assert.Equal(_player.MaxEnergy, _player.CurrentEnergy);
     }
 
-    
+    [Fact]
+    public void DrawCard_AddSingleCardFromDrawPileToHand_ReturnsTrue()
+    {
+        // Arrange
+
+        // Act
+        bool result = _player.DrawCard();
+
+        // Assert
+        Assert.Single(_player.Hand);
+        Assert.Equal(39, _player.DrawPile.Count);
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DrawCards_AddMultipleCardsFromDrawPileToHand_ReturnsTrue()
+    {
+        // Arrange
+
+        // Act
+        bool result = _player.DrawCards(5);
+
+        // Assert
+        Assert.Equal(5, _player.Hand.Count);
+        Assert.Equal(35, _player.DrawPile.Count);
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DrawCards_DrawMoreCardsThanInPile_ReturnsFalseAndDrawsRemaining()
+    {
+        // Arrange
+
+        // Act
+        bool result = _player.DrawCards(43);
+
+        // Assert
+        Assert.Equal(40, _player.Hand.Count);
+        Assert.Empty(_player.DrawPile);
+        Assert.False(result);
+    }
 }

@@ -9,6 +9,7 @@ Scope: the **core attack/defend/energy/charge loop only**. Special effects (the 
 - **Energy replenish:** at the start of *every* turn, **both** players' energy refills to their own current max — not just the active player's.
 - **Card lifecycle:** a played card (attack or defense) is discarded after use; the active player draws 1 card at the start of their own attack-turn.
 - **Half-cost rounding:** defending with the same element halves the card's Cost, rounding down (integer division) — e.g. Cost 3 → 1, Cost 4 → 2, Cost 5 → 2.
+- **Empty deck:** drawing from an empty deck is not a loss condition (for now). Drawing multiple cards at once draws as many as are available and reports whether it completed the full requested count, without rolling back any partial draw.
 
 ## Open details (not architecture blockers — pin down when writing the relevant test)
 
