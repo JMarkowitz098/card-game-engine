@@ -23,14 +23,14 @@ public class GameState
 
         if (!CanAttack(intent))
         {
-            IntentResultFail();
+            return IntentResultFail();
         }
 
         var attacker = GetPlayer(intent.AttackingPlayerId);
 
         if (!CanUseCard(attacker, card))
         {
-            IntentResultFail();
+            return IntentResultFail();
         }
 
         var events = new List<IGameEvent> { new AttackDeclared(intent.AttackingPlayerId, card.Attack) };
@@ -53,14 +53,14 @@ public class GameState
         var card = intent.Card;
         if (!CanDefend(intent))
         {
-            IntentResultFail();
+            return IntentResultFail();
         }
 
         var defender = GetPlayer(intent.DefendingPlayerId);
 
         if (!CanUseCard(defender, card))
         {
-            IntentResultFail();
+            return IntentResultFail();
         }
 
         var events = new List<IGameEvent> { new DefenseDeclared(intent.DefendingPlayerId, card.Defense) };
@@ -76,6 +76,13 @@ public class GameState
         int damage = CombatResolver.ResolveBattle(_pendingAttackCard, card);
         defender.TakeDamage(damage);
         events.Add(new DamageDealt(intent.DefendingPlayerId, damage));
+
+        if (defender.CurrentHealth == 0)
+        {
+            Phase = TurnPhase.MatchEnded;
+            events.Add(new MatchEnded(GetOpponentId(intent.DefendingPlayerId)));
+            return new IntentResult(true, events);
+        }
 
         ReadyNewTurn(defender, events, intent);
 

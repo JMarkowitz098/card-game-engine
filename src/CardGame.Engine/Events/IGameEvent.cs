@@ -10,3 +10,4 @@ public record DamageDealt(PlayerId Player, int DamageValue) : IGameEvent;
 public record MaxEnergyIncreased(PlayerId Player, int AdditionalEneryValue) : IGameEvent;
 public record CardDrawn(PlayerId Player) : IGameEvent;
 public record EnergyReplenishedToFull(PlayerId Player) : IGameEvent;
+public record MatchEnded(PlayerId Winner): IGameEvent;
