@@ -6,6 +6,8 @@ A digital video game version of a TCG (trading card game). Starting as local sin
 
 The user is learning C#/.NET on this project. **Do not write code or edit/create any files unless explicitly told to.** Default mode is advice, explanation, and answering questions — the user wants to write the code themselves. Only make file edits when the user explicitly asks for them in that turn.
 
+**This also applies to inline code in chat, not just file edits.** Describe what a method/type/test should do in plain English rather than writing full code blocks by default — only show code when the user explicitly asks to see an example or code sample.
+
 **Never run `git commit` (or push) on this project, full stop.** No exception via implicit/collaborative phrasing — only if explicitly overridden by the user in that exact moment.
 
 ## Stack
