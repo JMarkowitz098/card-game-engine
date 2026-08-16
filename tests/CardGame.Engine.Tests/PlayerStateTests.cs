@@ -181,4 +181,36 @@ public class PlayerStateTests
         Assert.Empty(_player.DrawPile);
         Assert.False(result);
     }
+
+    [Fact]
+    public void DiscardCard_MovesCardFromHandToDiscardPile_ReturnsTrue()
+    {
+        // Arrange
+        _player.DrawCards(5);
+        var card = _player.Hand[0];
+
+        // Act
+        bool result = _player.DiscardCard(card);
+
+        //Assert
+        Assert.Equal(4, _player.Hand.Count);
+        Assert.Single(_player.DiscardPile);
+        Assert.Equal(card, _player.DiscardPile[0]);
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DiscardCard_HandIsEmpty_ReturnsFalse()
+    {
+        // Arrange
+        var card = _player.DrawPile[0];
+
+        // Act
+        bool result = _player.DiscardCard(card);
+
+        //Assert
+        Assert.Empty(_player.Hand);
+        Assert.Empty(_player.DiscardPile);
+        Assert.False(result);
+    }
 }

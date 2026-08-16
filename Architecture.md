@@ -14,6 +14,7 @@ Scope: the **core attack/defend/energy/charge loop only**. Special effects (the 
 ## Open details (not architecture blockers — pin down when writing the relevant test)
 
 - Whether a Charge-driven MaxEnergy increase makes extra *current* energy available immediately that same turn, or only takes effect starting next turn's replenish.
+- **`CardId` / card-instance identity** (see Intents/Events below): still undesigned. **Interim:** `BattleCard.Name` is treated as a de facto unique identifier for equality/lookup purposes (e.g. `DiscardCard`'s `List.Remove`, which relies on `BattleCard`'s record structural equality). Not a real solution — breaks if two cards ever share a name, or once a hand can hold duplicate copies of the same named card. Superseded once `CardInstanceId` is designed.
 
 ## Assumptions
 

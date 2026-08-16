@@ -73,6 +73,17 @@ public class PlayerState
         return true;
     }
 
+    public bool DiscardCard(BattleCard card)
+    {
+        if (!_hand.Remove(card))
+        {
+            return false;
+        }
+
+        _discardPile.Add(card);
+        return true;
+    }
+
     private BattleCard PopTopCard()
     {
         var topCard = _drawPile[^1];
