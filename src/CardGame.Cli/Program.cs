@@ -55,7 +55,38 @@ public class Program
 
         var attacked = ProcessAttack(context);
         if (attacked)
+        {
+            HandoffTo(context.Op);
             ProcessDefense(context);
+
+            HandoffTo(context.Ap);
+            PrintDefenseSummary(context);
+        }
+        HandoffTo(gameState.ActivePlayer);
+    }
+
+    private static void PrintDefenseSummary(TurnContext context)
+    {
+        var gameState = context.GameState;
+        var lastDefenseCard = gameState.GetLastDefenseCard();
+        if (lastDefenseCard == null)
+        {
+            PrintColored($"{context.Op} doesn't defend", GetPlayerColor(context.Op));
+        }
+        else
+        {
+            PrintColored(
+                $"{context.Op} defends with {FormatCard(lastDefenseCard)}",
+                GetPlayerColor(context.Op)
+            );
+        }
+
+        var damage = CombatResolver.ResolveBattle(
+            gameState.GetPendingAttackCard()!,
+            lastDefenseCard
+        );
+        PrintColored($"{context.Op} took {damage} damage!\n", ConsoleColor.Red);
+        PrintStatus(context.Ap, context.Op, context.Player, context.Opponent);
     }
 
     private static ConsoleColor GetPlayerColor(PlayerId id)
@@ -75,10 +106,16 @@ public class Program
         Thread.Sleep(1000);
     }
 
+    private static string FormatCard(BattleCard card)
+    {
+        return $"{card.Name} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}";
+    }
+
     private static void PrintCard(BattleCard card, int index, ConsoleColor color)
     {
         PrintColored(
-            $"{index + 1}. {card.Name, -8} | {card.Element, -4} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
+            // $"{index + 1}. {card.Name, -8} | {card.Element, -4} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
+            $"{index + 1}. {card.Name, -8} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
             color
         );
     }
@@ -141,7 +178,7 @@ public class Program
             else
             {
                 PrintColored(
-                    $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+                    $"\n{context.Ap} attacks with {FormatCard(card)}",
                     GetPlayerColor(context.Ap)
                 );
                 Pause();
@@ -171,7 +208,13 @@ public class Program
     {
         var op = context.Op;
         var opponent = context.Opponent;
+        var card = context.GameState.GetPendingAttackCard()!;
+        PrintColored(
+            $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+            GetPlayerColor(context.Ap)
+        );
         Console.WriteLine($"{op} chance to defend!\n");
+
         Pause();
         PrintStatus(context.Ap, op, context.Player, opponent);
         PrintColored($"{op}'s hand", GetPlayerColor(op));
@@ -195,7 +238,7 @@ public class Program
             }
             else
             {
-                PrintColored($"{op} defends with {opCard!.Name}", GetPlayerColor(op));
+                PrintColored($"{op} defends with {FormatCard(opCard!)}", GetPlayerColor(op));
             }
             Pause();
 
@@ -221,5 +264,14 @@ public class Program
             Console.WriteLine("-------------------\n");
             return;
         }
+    }
+
+    private static void HandoffTo(PlayerId nextPlayerId)
+    {
+        Console.WriteLine("\nPress Enter when you're done and ready to hide your cards.");
+        Console.ReadLine();
+        Console.Clear();
+        Console.WriteLine($"Pass the device to {nextPlayerId}. Press Enter when they're ready.");
+        Console.ReadLine();
     }
 }

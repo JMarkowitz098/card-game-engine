@@ -7,6 +7,7 @@ public class GameState
     public PlayerId ActivePlayer { get; private set; }
     public TurnPhase Phase { get; private set; }
     private BattleCard? _pendingAttackCard;
+    private BattleCard? _lastDefenseCard;
 
     public GameState(PlayerState playerA, PlayerState playerB, PlayerId startingPlayer)
     {
@@ -87,6 +88,8 @@ public class GameState
             throw new InvalidOperationException();
         }
 
+        _lastDefenseCard = intent.Card;
+
         int damage = CombatResolver.ResolveBattle(_pendingAttackCard, intent.Card);
 
         defender.TakeDamage(damage);
@@ -128,10 +131,20 @@ public class GameState
         var opponent = GetPlayer(opponentId);
         opponent.ReplenishEnergy();
         events.Add(new EnergyReplenishedToFull(opponentId));
-        
+
         nextActivePlayer.DrawCard();
         events.Add(new CardDrawn(nextActivePlayerId));
         ActivePlayer = nextActivePlayerId;
+    }
+
+    public BattleCard? GetPendingAttackCard()
+    {
+        return _pendingAttackCard;
+    }
+
+    public BattleCard? GetLastDefenseCard()
+    {
+        return _lastDefenseCard;
     }
 
     private bool CanAttack(DeclareAttackIntent intent)
