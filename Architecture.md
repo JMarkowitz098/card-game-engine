@@ -19,6 +19,7 @@ A simple console based UI for testing the engine and simulating games
 - **Charge timing:** Charge raises MaxEnergy, not current energy
 - **Declining to defend:** A player can pass instead of defending, taking full damage from the attack card
 - **Match end:** the match ends the instant a player's `CurrentHealth` hits 0 from a resolved attack.
+- **Deck shuffling:** `PlayerState` shuffles its deck (Fisher-Yates) on construction. Seedable via an optional `Random` param for tests; `Random.Shared` otherwise.
 
 ## To Be Implemented
 
@@ -55,19 +56,23 @@ tests/
 ## Progress
 
 - `CombatResolver` — pure damage math, fully tested.
-- `PlayerState` — health/energy/charge/hand/draw/discard, fully tested.
-- `GameState` — `DeclareAttack`/`DeclareDefense` orchestration, win detection, decline-to-defend. 24 tests. Gap: rejection-path coverage is thin (see Next steps).
+- `PlayerState` — health/energy/charge/hand/draw/discard, fully tested. Now shuffles on construction.
+- `GameState` — `DeclareAttack`/`DeclareDefense` orchestration, win detection, decline-to-defend. 25 tests. Gap: rejection-path coverage is thin (see Next steps).
 - `CardGame.Cli` — playable console harness: turn loop, event narration, color coding, pacing delays.
-- Tooling: `.editorconfig` + analyzers, `.gitignore`, VS Code format-on-save, `CA1707` scoped-suppressed for test naming.
+- `StarterDeck` — tuple-list card templates → `SelectMany`/`Enumerable.Repeat` expansion into a 40-card deck. Mechanism built; card content still being authored.
+- Fixed: `ProcessAttack`/`ProcessDefense` weren't checking `DeclareAttack`/`DeclareDefense`'s `Success` — an unaffordable/invalid card silently did nothing instead of being rejected. Both now retry-loop until a valid, accepted choice is made.
+- Tooling: `.editorconfig` + analyzers, `.gitignore`, VS Code format-on-save, `CA1707` scoped-suppressed for test naming, CSharpier (local dotnet tool + VS Code extension) for layout/line-wrapping on top of the analyzers.
+- `README.md` Setup section — prerequisites + commands for a fresh clone.
 
 ## Next steps
 
 Roughly in priority order:
 
-1. **Same-element-halves-cost** — confirmed rule, unwired.
-2. **`GameState` rejection-path tests** — `DeclareDefense` has none; `DeclareAttack` only covers wrong-player.
-3. **Real, varied decks for the CLI harness** — replace the 40-identical-card dummy deck.
-4. **`CardInstanceId`** — once duplicate-named cards or networked play make the `Name`-as-identifier shortcut untenable.
-5. **Match setup / mulligan** — draw 5, single mulligan. Deferred, low priority.
-6. **`LeaderCard` + leader effects + data-driven effects schema** — deferred since the start.
-7. **Unity integration** — deferred until the harness is solid.
+1. **"Draw instead of attack"** — new rule, in design. Needs its own intent (not a nullable `Card` on `DeclareAttackIntent` — declining to defend keeps the same phase transition either way, but skipping the attack skips `ReadyToDefend` entirely, so it's a different state-machine outcome). Also needs `ReadyNewTurn` generalized to take a plain `PlayerId` instead of a `DeclareDefenseIntent` so both paths can call it, and a decision on whether it needs its own event or reuses `CardDrawn`.
+2. **Same-element-halves-cost** — confirmed rule, unwired.
+3. **`GameState` rejection-path tests** — `DeclareDefense` has none; `DeclareAttack` only covers wrong-player.
+4. **Finish `StarterDeck` card content** — in progress.
+5. **`CardInstanceId`** — once duplicate-named cards or networked play make the `Name`-as-identifier shortcut untenable.
+6. **Match setup / mulligan** — draw 5, single mulligan. Deferred, low priority.
+7. **`LeaderCard` + leader effects + data-driven effects schema** — deferred since the start.
+8. **Unity integration** — deferred until the harness is solid.
