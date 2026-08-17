@@ -18,8 +18,10 @@ A simple console based UI for testing the engine and simulating games
 - **Empty deck:** drawing from an empty deck is not a loss condition (for now). Drawing multiple cards at once draws as many as are available and reports whether it completed the full requested count, without rolling back any partial draw.
 - **Charge timing:** Charge raises MaxEnergy, not current energy
 - **Declining to defend:** A player can pass instead of defending, taking full damage from the attack card
+- **Declining to attack:** A player can pass instead of attacking too (`DeclareAttackIntent.Card` nullable, same as defense). Turn passes straight to the opponent, no defend phase.
 - **Match end:** the match ends the instant a player's `CurrentHealth` hits 0 from a resolved attack.
 - **Deck shuffling:** `PlayerState` shuffles its deck (Fisher-Yates) on construction. Seedable via an optional `Random` param for tests; `Random.Shared` otherwise.
+- **Draw timing:** exactly one draw per attack-turn. The very first turn's draw happens in `GameState`'s constructor; every turn after that comes from `ReadyNewTurn`. The CLI never triggers a draw itself, only narrates one having happened.
 
 ## To Be Implemented
 
@@ -30,6 +32,8 @@ A simple console based UI for testing the engine and simulating games
 
 - Starting Health (10) and Energy (1) are global constants, not per-leader stats.
 - Decks have 40 cards
+- Both players currently use identical decks (`StarterDeck.Create()` called twice) — every match is a mirror match for now.
+- No special effects or `LeaderCard` — holding off until playtesting the vanilla loop specifically signals a need, not building speculatively.
 
 ## Project Structure
 
@@ -45,6 +49,7 @@ src/
   CardGame.Cli/             — playable console harness
     Program.cs
     TurnContext.cs
+    StarterDeck.cs          — card templates + deck-expansion; currently Fire (`Scor`) only
 tests/
   CardGame.Engine.Tests/    — xUnit, references CardGame.Engine
     CombatResolverTests.cs
@@ -57,11 +62,11 @@ tests/
 
 Roughly in priority order:
 
-1. **"Draw instead of attack"** — new rule, in design. Needs its own intent (not a nullable `Card` on `DeclareAttackIntent` — declining to defend keeps the same phase transition either way, but skipping the attack skips `ReadyToDefend` entirely, so it's a different state-machine outcome). Also needs `ReadyNewTurn` generalized to take a plain `PlayerId` instead of a `DeclareDefenseIntent` so both paths can call it, and a decision on whether it needs its own event or reuses `CardDrawn`.
-2. **Same-element-halves-cost** — confirmed rule, unwired.
-3. **`GameState` rejection-path tests** — `DeclareDefense` has none; `DeclareAttack` only covers wrong-player.
-4. **Finish `StarterDeck` card content** — in progress.
+1. **Quick replay** — finishing a match currently requires relaunching (`dotnet run`) to play again. Highest-value change for actual playtesting volume.
+2. **`GameState` rejection-path tests** — `DeclareDefense` has none; `DeclareAttack` only covers wrong-player.
+3. **Expand `StarterDeck` beyond Fire** — only `Scor` cards exist right now; both players get identical decks.
+4. **Same-element-halves-cost** — confirmed rule, unwired. Explicitly on hold for now.
 5. **`CardInstanceId`** — once duplicate-named cards or networked play make the `Name`-as-identifier shortcut untenable.
 6. **Match setup / mulligan** — draw 5, single mulligan. Deferred, low priority.
-7. **`LeaderCard` + leader effects + data-driven effects schema** — deferred since the start.
-8. **Unity integration** — deferred until the harness is solid.
+7. **`LeaderCard` + leader effects + data-driven effects schema** — deferred until playtesting signals the vanilla loop needs them, not before.
+8. **Networking** — deferred; hotseat play covers same-room testing for now. If it happens, the console harness itself can be the networked client (two processes, shared authoritative `GameState`) — no GUI required first.
