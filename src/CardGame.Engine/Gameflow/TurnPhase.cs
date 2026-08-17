@@ -1,3 +1,8 @@
 namespace CardGame.Engine;
 
-public enum TurnPhase { ReadyToAttack, ReadyToDefend, MatchEnded }
+public enum TurnPhase
+{
+    ReadyToAttack,
+    ReadyToDefend,
+    MatchEnded,
+}

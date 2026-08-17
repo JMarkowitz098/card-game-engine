@@ -6,7 +6,8 @@ public class PlayerStateTests
 
     private static List<BattleCard> CreateDummyDeck(int count)
     {
-        return Enumerable.Range(0, count)
+        return Enumerable
+            .Range(0, count)
             .Select(i => new BattleCard($"card{i}", Element.Scor, 1, 1, 1, 1))
             .ToList();
     }

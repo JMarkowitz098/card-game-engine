@@ -1,4 +1,5 @@
 using CardGame.Engine;
+
 namespace CardGame.Cli;
 
 public class Program
@@ -68,7 +69,8 @@ public class Program
 
     private static List<BattleCard> CreateDummyDeck(int count)
     {
-        return Enumerable.Range(0, count)
+        return Enumerable
+            .Range(0, count)
             .Select(i => new BattleCard($"card{i}", Element.Scor, 1, 1, 4, 1))
             .ToList();
     }
@@ -92,7 +94,10 @@ public class Program
 
     private static void PrintCard(BattleCard card, int index, ConsoleColor color)
     {
-        PrintColored($"{index + 1}. {card.Name} | EL: {card.Element} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}", color);
+        PrintColored(
+            $"{index + 1}. {card.Name} | EL: {card.Element} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}",
+            color
+        );
     }
 
     private static void PrintHand(IReadOnlyList<BattleCard> hand, ConsoleColor color)
@@ -104,12 +109,23 @@ public class Program
         Console.WriteLine();
     }
 
-    private static void PrintStatus(PlayerId ap, PlayerId op, PlayerState player, PlayerState opponent)
+    private static void PrintStatus(
+        PlayerId ap,
+        PlayerId op,
+        PlayerState player,
+        PlayerState opponent
+    )
     {
         PrintColored($"{ap}'s Health: {player.CurrentHealth}/10", GetPlayerColor(ap));
-        PrintColored($"{ap}'s Energy: {player.CurrentEnergy}/{player.MaxEnergy}", GetPlayerColor(ap));
+        PrintColored(
+            $"{ap}'s Energy: {player.CurrentEnergy}/{player.MaxEnergy}",
+            GetPlayerColor(ap)
+        );
         PrintColored($"{op}'s Health: {opponent.CurrentHealth}/10", GetPlayerColor(op));
-        PrintColored($"{op}'s Energy: {opponent.CurrentEnergy}/{opponent.MaxEnergy}\n", GetPlayerColor(op));
+        PrintColored(
+            $"{op}'s Energy: {opponent.CurrentEnergy}/{opponent.MaxEnergy}\n",
+            GetPlayerColor(op)
+        );
         Pause();
     }
 
@@ -126,7 +142,10 @@ public class Program
             return;
         }
         var card = context.Player.Hand[index - 1];
-        PrintColored($"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})", GetPlayerColor(context.Ap));
+        PrintColored(
+            $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+            GetPlayerColor(context.Ap)
+        );
         Pause();
         var attackIntent = new DeclareAttackIntent(context.Ap, card);
         var result = context.GameState.DeclareAttack(attackIntent);
@@ -134,7 +153,9 @@ public class Program
         if (result.Success)
         {
             Console.WriteLine("Attack successful");
-            Console.WriteLine($"Energy reduced by {card.Cost}. Max energy increased by {card.Charge} for a total of {context.Player.MaxEnergy}\n");
+            Console.WriteLine(
+                $"Energy reduced by {card.Cost}. Max energy increased by {card.Charge} for a total of {context.Player.MaxEnergy}\n"
+            );
             Pause();
         }
     }
@@ -169,7 +190,10 @@ public class Program
             var damageEvent = result.Events.OfType<DamageDealt>().FirstOrDefault();
             if (damageEvent != null)
             {
-                PrintColored($"{damageEvent.Player} took {damageEvent.DamageValue} damage!\n", ConsoleColor.Red);
+                PrintColored(
+                    $"{damageEvent.Player} took {damageEvent.DamageValue} damage!\n",
+                    ConsoleColor.Red
+                );
                 Pause();
             }
             Console.WriteLine("-------------------");

@@ -1,3 +1,7 @@
 namespace CardGame.Engine;
 
-public enum PlayerId { PlayerA, PlayerB }
+public enum PlayerId
+{
+    PlayerA,
+    PlayerB,
+}

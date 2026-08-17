@@ -70,7 +70,8 @@ public class PlayerState
         for (int i = 0; i < count; i++)
         {
             bool drewCard = DrawCard();
-            if (!drewCard) return false;
+            if (!drewCard)
+                return false;
         }
         return true;
     }

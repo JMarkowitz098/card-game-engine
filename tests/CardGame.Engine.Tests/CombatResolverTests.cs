@@ -29,6 +29,7 @@ public class CombatResolverTests
         // Assert
         Assert.Equal(0, result);
     }
+
     [Fact]
     public void ResolveBattle_AttackWithNoDefense_ReturnsDamage()
     {

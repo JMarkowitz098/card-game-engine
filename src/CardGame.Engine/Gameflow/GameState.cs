@@ -8,7 +8,6 @@ public class GameState
     public TurnPhase Phase { get; private set; }
     private BattleCard? _pendingAttackCard;
 
-
     public GameState(PlayerState playerA, PlayerState playerB, PlayerId startingPlayer)
     {
         PlayerA = playerA;
@@ -33,7 +32,10 @@ public class GameState
             return IntentResultFail();
         }
 
-        var events = new List<IGameEvent> { new AttackDeclared(intent.AttackingPlayerId, card.Attack) };
+        var events = new List<IGameEvent>
+        {
+            new AttackDeclared(intent.AttackingPlayerId, card.Attack),
+        };
         events.Add(new EnergySpent(intent.AttackingPlayerId, card.Cost));
 
         attacker.IncreaseMaxEnergy(card.Charge);
@@ -106,7 +108,11 @@ public class GameState
         return id == PlayerId.PlayerA ? PlayerId.PlayerB : PlayerId.PlayerA;
     }
 
-    private void ReadyNewTurn(PlayerState defender, List<IGameEvent> events, DeclareDefenseIntent intent)
+    private void ReadyNewTurn(
+        PlayerState defender,
+        List<IGameEvent> events,
+        DeclareDefenseIntent intent
+    )
     {
         Phase = TurnPhase.ReadyToAttack;
         defender.ReplenishEnergy();
@@ -139,5 +145,4 @@ public class GameState
     {
         return new IntentResult(false, new List<IGameEvent>());
     }
-
 }

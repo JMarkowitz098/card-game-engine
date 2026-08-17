@@ -1,3 +1,9 @@
 namespace CardGame.Engine;
 
-public enum Element { Enh, Eth, Scor, Shor }
+public enum Element
+{
+    Enh,
+    Eth,
+    Scor,
+    Shor,
+}

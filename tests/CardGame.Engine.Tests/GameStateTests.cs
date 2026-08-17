@@ -15,7 +15,14 @@ public class GameStateTests
         var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, attackCard);
         var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, defenseCard);
         return new GameStateTestContext(
-            attackCard, defenseCard, playerA, playerB, gameState, attackIntent, defenseIntent);
+            attackCard,
+            defenseCard,
+            playerA,
+            playerB,
+            gameState,
+            attackIntent,
+            defenseIntent
+        );
     }
 
     private static GameStateTestContext SetupGameEndContext()
@@ -31,7 +38,14 @@ public class GameStateTests
         var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, attackCard);
         var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, defenseCard);
         return new GameStateTestContext(
-            attackCard, defenseCard, playerA, playerB, gameState, attackIntent, defenseIntent);
+            attackCard,
+            defenseCard,
+            playerA,
+            playerB,
+            gameState,
+            attackIntent,
+            defenseIntent
+        );
     }
 
     [Fact]
@@ -164,15 +178,23 @@ public class GameStateTests
         var playerBDefendCard = new BattleCard("bDefend", Element.Eth, 1, 1, 2, 1);
         var playerBAttackCard = new BattleCard("bAttack", Element.Scor, 1, 1, 2, 1);
 
-        var playerA = new PlayerState(new List<BattleCard> { playerADefendCard, playerAAttackCard });
-        var playerB = new PlayerState(new List<BattleCard> { playerBAttackCard, playerBDefendCard });
+        var playerA = new PlayerState(
+            new List<BattleCard> { playerADefendCard, playerAAttackCard }
+        );
+        var playerB = new PlayerState(
+            new List<BattleCard> { playerBAttackCard, playerBDefendCard }
+        );
         var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
         playerA.DrawCards(2);
         playerB.DrawCards(2);
 
         // Act + Assert: Turn 1 — Player A attacks, Player B defends
-        var turn1AttackResult = gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, playerAAttackCard));
-        var turn1DefenseResult = gameState.DeclareDefense(new DeclareDefenseIntent(PlayerId.PlayerB, playerBDefendCard));
+        var turn1AttackResult = gameState.DeclareAttack(
+            new DeclareAttackIntent(PlayerId.PlayerA, playerAAttackCard)
+        );
+        var turn1DefenseResult = gameState.DeclareDefense(
+            new DeclareDefenseIntent(PlayerId.PlayerB, playerBDefendCard)
+        );
 
         Assert.True(turn1AttackResult.Success);
         Assert.True(turn1DefenseResult.Success);
@@ -180,8 +202,12 @@ public class GameStateTests
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
 
         // Act: Turn 2 — roles reversed, Player B attacks, Player A defends
-        var turn2AttackResult = gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerB, playerBAttackCard));
-        var turn2DefenseResult = gameState.DeclareDefense(new DeclareDefenseIntent(PlayerId.PlayerA, playerADefendCard));
+        var turn2AttackResult = gameState.DeclareAttack(
+            new DeclareAttackIntent(PlayerId.PlayerB, playerBAttackCard)
+        );
+        var turn2DefenseResult = gameState.DeclareDefense(
+            new DeclareDefenseIntent(PlayerId.PlayerA, playerADefendCard)
+        );
 
         // Assert: turn 2 — the defender is now Player A, not Player B (the exact bug class fixed earlier)
         Assert.True(turn2AttackResult.Success);
