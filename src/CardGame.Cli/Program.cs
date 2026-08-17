@@ -4,20 +4,32 @@ namespace CardGame.Cli;
 
 public class Program
 {
+    private static string s_playerAName = "PlayerA";
+    private static string s_playerBName = "PlayerB";
+
     static void Main(string[] args)
     {
+        Console.WriteLine("\n------------------------------------");
+        Console.WriteLine("The Elemental Chronicles TCG Battler");
+        Console.WriteLine("------------------------------------\n");
+
+        Console.Write("Enter a name for Player A (press Enter for default): ");
+        var nameAInput = Console.ReadLine();
+        s_playerAName = string.IsNullOrWhiteSpace(nameAInput) ? "PlayerA" : nameAInput;
+
+        Console.Write("Enter a name for Player B (press Enter for default): ");
+        var nameBInput = Console.ReadLine();
+        s_playerBName = string.IsNullOrWhiteSpace(nameBInput) ? "PlayerB" : nameBInput;
+
         // Setup
         var playerA = new PlayerState(StarterDeck.Create());
         var playerB = new PlayerState(StarterDeck.Create());
         var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
-        Console.WriteLine("\n------------------------------------");
-        Console.WriteLine("The Elemental Chronicles TCG Battler");
-        Console.WriteLine("------------------------------------\n");
-        Console.WriteLine("PlayerA created. Deck 40/40");
-        Console.WriteLine("PlayerB created. Deck 40/40\n");
-        Console.WriteLine("PlayerA draws 5 cards");
+        Console.WriteLine($"\n{s_playerAName} created. Deck 40/40");
+        Console.WriteLine($"{s_playerBName} created. Deck 40/40\n");
+        Console.WriteLine($"{s_playerAName} draws 5 cards");
         playerA.DrawCards(5);
-        Console.WriteLine("PlayerB draws 5 cards\n");
+        Console.WriteLine($"{s_playerBName} draws 5 cards\n");
         playerB.DrawCards(5);
         Pause();
 
@@ -29,11 +41,11 @@ public class Program
 
         if (playerB.CurrentHealth == 0)
         {
-            PrintColored("Congrats Player A! You Win!", GetPlayerColor(PlayerId.PlayerA));
+            PrintColored($"Congrats {s_playerAName}! You Win!", GetPlayerColor(PlayerId.PlayerA));
         }
         else
         {
-            PrintColored("Congrats Player B! You Win!", GetPlayerColor(PlayerId.PlayerB));
+            PrintColored($"Congrats {s_playerBName}! You Win!", GetPlayerColor(PlayerId.PlayerB));
         }
     }
 
@@ -44,11 +56,11 @@ public class Program
         var op = GameState.GetOpponentId(ap);
         var opponent = gameState.GetPlayer(op);
         var context = new TurnContext(player, opponent, ap, op, gameState);
-        PrintColored($"It's {ap}'s turn\n", GetPlayerColor(ap));
+        PrintColored($"It's {GetPlayerName(ap)}'s turn\n", GetPlayerColor(ap));
         PrintStatus(ap, op, player, opponent);
 
-        Console.WriteLine($"{ap} draws a card");
-        PrintColored($"{ap}'s hand", GetPlayerColor(ap));
+        Console.WriteLine($"{GetPlayerName(ap)} draws a card");
+        PrintColored($"{GetPlayerName(ap)}'s hand", GetPlayerColor(ap));
         PrintHand(player.Hand, GetPlayerColor(ap));
 
         var attacked = ProcessAttack(context);
@@ -69,12 +81,12 @@ public class Program
         var lastDefenseCard = gameState.GetLastDefenseCard();
         if (lastDefenseCard == null)
         {
-            PrintColored($"{context.Op} doesn't defend", GetPlayerColor(context.Op));
+            PrintColored($"{GetPlayerName(context.Op)} doesn't defend", GetPlayerColor(context.Op));
         }
         else
         {
             PrintColored(
-                $"{context.Op} defends with {FormatCard(lastDefenseCard)}",
+                $"{GetPlayerName(context.Op)} defends with {FormatCard(lastDefenseCard)}",
                 GetPlayerColor(context.Op)
             );
         }
@@ -83,13 +95,18 @@ public class Program
             gameState.GetPendingAttackCard()!,
             lastDefenseCard
         );
-        PrintColored($"{context.Op} took {damage} damage!\n", ConsoleColor.Red);
+        PrintColored($"{GetPlayerName(context.Op)} took {damage} damage!\n", ConsoleColor.Red);
         PrintStatus(context.Ap, context.Op, context.Player, context.Opponent);
     }
 
     private static ConsoleColor GetPlayerColor(PlayerId id)
     {
         return id == PlayerId.PlayerA ? ConsoleColor.Cyan : ConsoleColor.Magenta;
+    }
+
+    private static string GetPlayerName(PlayerId id)
+    {
+        return id == PlayerId.PlayerA ? s_playerAName : s_playerBName;
     }
 
     private static void PrintColored(string text, ConsoleColor color)
@@ -112,7 +129,6 @@ public class Program
     private static void PrintCard(BattleCard card, int index, ConsoleColor color)
     {
         PrintColored(
-            // $"{index + 1}. {card.Name, -8} | {card.Element, -4} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
             $"{index + 1}. {card.Name, -8} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
             color
         );
@@ -134,14 +150,20 @@ public class Program
         PlayerState opponent
     )
     {
-        PrintColored($"{ap}'s Health: {player.CurrentHealth}/10", GetPlayerColor(ap));
         PrintColored(
-            $"{ap}'s Energy: {player.CurrentEnergy}/{player.MaxEnergy}",
+            $"{GetPlayerName(ap)}'s Health: {player.CurrentHealth}/10",
             GetPlayerColor(ap)
         );
-        PrintColored($"{op}'s Health: {opponent.CurrentHealth}/10", GetPlayerColor(op));
         PrintColored(
-            $"{op}'s Energy: {opponent.CurrentEnergy}/{opponent.MaxEnergy}\n",
+            $"{GetPlayerName(ap)}'s Energy: {player.CurrentEnergy}/{player.MaxEnergy}",
+            GetPlayerColor(ap)
+        );
+        PrintColored(
+            $"{GetPlayerName(op)}'s Health: {opponent.CurrentHealth}/10",
+            GetPlayerColor(op)
+        );
+        PrintColored(
+            $"{GetPlayerName(op)}'s Energy: {opponent.CurrentEnergy}/{opponent.MaxEnergy}\n",
             GetPlayerColor(op)
         );
         Pause();
@@ -171,12 +193,15 @@ public class Program
             var card = index == 0 ? null : context.Player.Hand[index - 1];
             if (card == null)
             {
-                PrintColored($"{context.Ap} doesn't attack", GetPlayerColor(context.Ap));
+                PrintColored(
+                    $"{GetPlayerName(context.Ap)} doesn't attack",
+                    GetPlayerColor(context.Ap)
+                );
             }
             else
             {
                 PrintColored(
-                    $"\n{context.Ap} attacks with {FormatCard(card)}",
+                    $"\n{GetPlayerName(context.Ap)} attacks with {FormatCard(card)}",
                     GetPlayerColor(context.Ap)
                 );
                 Pause();
@@ -208,14 +233,14 @@ public class Program
         var opponent = context.Opponent;
         var card = context.GameState.GetPendingAttackCard()!;
         PrintColored(
-            $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+            $"\n{GetPlayerName(context.Ap)} attacks with {FormatCard(card)}",
             GetPlayerColor(context.Ap)
         );
-        Console.WriteLine($"{op} chance to defend!\n");
+        Console.WriteLine($"{GetPlayerName(op)} chance to defend!\n");
 
         Pause();
         PrintStatus(context.Ap, op, context.Player, opponent);
-        PrintColored($"{op}'s hand", GetPlayerColor(op));
+        PrintColored($"{GetPlayerName(op)}'s hand", GetPlayerColor(op));
         PrintHand(opponent.Hand, GetPlayerColor(op));
 
         while (true)
@@ -232,11 +257,14 @@ public class Program
             var opCard = index == 0 ? null : opponent.Hand[index - 1];
             if (index == 0)
             {
-                PrintColored($"{op} doesn't defend", GetPlayerColor(op));
+                PrintColored($"{GetPlayerName(op)} doesn't defend", GetPlayerColor(op));
             }
             else
             {
-                PrintColored($"{op} defends with {FormatCard(opCard!)}", GetPlayerColor(op));
+                PrintColored(
+                    $"{GetPlayerName(op)} defends with {FormatCard(opCard!)}",
+                    GetPlayerColor(op)
+                );
             }
             Pause();
 
@@ -252,7 +280,7 @@ public class Program
             if (damageEvent != null)
             {
                 PrintColored(
-                    $"{damageEvent.Player} took {damageEvent.DamageValue} damage!\n",
+                    $"{GetPlayerName(damageEvent.Player)} took {damageEvent.DamageValue} damage!\n",
                     ConsoleColor.Red
                 );
                 Pause();
@@ -269,7 +297,9 @@ public class Program
         Console.WriteLine("\nPress Enter when you're done and ready to hide your cards.");
         Console.ReadLine();
         Console.Clear();
-        Console.WriteLine($"Pass the device to {nextPlayerId}. Press Enter when they're ready.");
+        Console.WriteLine(
+            $"Pass the device to {GetPlayerName(nextPlayerId)}. Press Enter when they're ready."
+        );
         Console.ReadLine();
     }
 }
