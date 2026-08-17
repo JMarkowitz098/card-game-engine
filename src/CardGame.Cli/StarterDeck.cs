@@ -15,15 +15,15 @@ public static class StarterDeck
     )> Templates = new()
     {
         ("Spark", Element.Scor, 1, 1, 2, 1, 4),
-        ("Blaze", Element.Scor, 1, 1, 2, 1, 4),
-        ("Scorch", Element.Scor, 1, 1, 2, 1, 4),
-        ("Inferno", Element.Scor, 1, 1, 2, 1, 4),
-        ("Wildfire", Element.Scor, 1, 1, 2, 1, 4),
-        ("Ember", Element.Scor, 1, 1, 2, 1, 4),
-        ("Ash", Element.Scor, 1, 1, 2, 1, 4),
-        ("Fire", Element.Scor, 1, 1, 2, 1, 4),
-        ("", Element.Scor, 1, 1, 2, 1, 4),
-        ("Wildfire", Element.Scor, 1, 1, 2, 1, 4),
+        ("Blaze", Element.Scor, 1, 2, 1, 1, 4),
+        ("Scorch", Element.Scor, 2, 2, 2, 2, 4),
+        ("Inferno", Element.Scor, 4, 2, 4, 2, 4),
+        ("Wildfire", Element.Scor, 8, 0, 10, 0, 4),
+        ("Ember", Element.Scor, 3, 2, 3, 3, 4),
+        ("Ash", Element.Scor, 5, 2, 2, 8, 4),
+        ("Fire", Element.Scor, 2, 2, 0, 4, 4),
+        ("Heat", Element.Scor, 4, 4, 2, 2, 4),
+        ("Hot", Element.Scor, 1, 0, 3, 3, 4),
     };
 
     public static List<BattleCard> Create()

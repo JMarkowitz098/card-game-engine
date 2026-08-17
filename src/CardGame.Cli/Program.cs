@@ -7,8 +7,8 @@ public class Program
     static void Main(string[] args)
     {
         // Setup
-        var playerA = new PlayerState(CreateDummyDeck(40));
-        var playerB = new PlayerState(CreateDummyDeck(40));
+        var playerA = new PlayerState(StarterDeck.Create());
+        var playerB = new PlayerState(StarterDeck.Create());
         var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
         Console.WriteLine("\n------------------------------------");
         Console.WriteLine("The Elemental Chronicles TCG Battler");
@@ -53,26 +53,8 @@ public class Program
         player.DrawCard();
         PrintHand(player.Hand, GetPlayerColor(ap));
 
-        Console.WriteLine("Choose a card to attack with:");
-        string? input = Console.ReadLine();
-        if (int.TryParse(input, out int index))
-        {
-            ProcessAttack(context, index);
-            ProcessDefense(context);
-        }
-        else
-        {
-            PrintInvalidOption();
-            return;
-        }
-    }
-
-    private static List<BattleCard> CreateDummyDeck(int count)
-    {
-        return Enumerable
-            .Range(0, count)
-            .Select(i => new BattleCard($"card{i}", Element.Scor, 1, 1, 4, 1))
-            .ToList();
+        ProcessAttack(context);
+        ProcessDefense(context);
     }
 
     private static ConsoleColor GetPlayerColor(PlayerId id)
@@ -95,7 +77,7 @@ public class Program
     private static void PrintCard(BattleCard card, int index, ConsoleColor color)
     {
         PrintColored(
-            $"{index + 1}. {card.Name} | EL: {card.Element} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}",
+            $"{index + 1}. {card.Name} | {card.Element} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}",
             color
         );
     }
@@ -134,29 +116,41 @@ public class Program
         Console.WriteLine("Sorry that's not an option. Please enter a number from your hand.");
     }
 
-    private static void ProcessAttack(TurnContext context, int index)
+    private static void ProcessAttack(TurnContext context)
     {
-        if (index < 0 || index > context.Player.Hand.Count)
+        while (true)
         {
-            PrintInvalidOption();
-            return;
-        }
-        var card = context.Player.Hand[index - 1];
-        PrintColored(
-            $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
-            GetPlayerColor(context.Ap)
-        );
-        Pause();
-        var attackIntent = new DeclareAttackIntent(context.Ap, card);
-        var result = context.GameState.DeclareAttack(attackIntent);
+            Console.WriteLine("Choose a card to attack with:");
+            string? input = Console.ReadLine();
+            if (
+                !int.TryParse(input, out int index)
+                || index < 1
+                || index > context.Player.Hand.Count
+            )
+            {
+                PrintInvalidOption();
+                continue;
+            }
 
-        if (result.Success)
-        {
-            Console.WriteLine("Attack successful");
-            Console.WriteLine(
-                $"Energy reduced by {card.Cost}. Max energy increased by {card.Charge} for a total of {context.Player.MaxEnergy}\n"
+            var card = context.Player.Hand[index - 1];
+            PrintColored(
+                $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+                GetPlayerColor(context.Ap)
             );
             Pause();
+            var result = context.GameState.DeclareAttack(new DeclareAttackIntent(context.Ap, card));
+
+            if (result.Success)
+            {
+                Console.WriteLine("Attack successful");
+                Console.WriteLine(
+                    $"Energy reduced by {card.Cost}. Max energy increased by {card.Charge} for a total of {context.Player.MaxEnergy}\n"
+                );
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("You can't play that card. Try again.\n");
         }
     }
 
@@ -170,11 +164,17 @@ public class Program
         PrintColored($"{op}'s hand", GetPlayerColor(op));
         PrintHand(opponent.Hand, GetPlayerColor(op));
 
-        Console.WriteLine("Choose a card to defend with (0 to Pass):");
-        var input = Console.ReadLine();
-
-        if (int.TryParse(input, out int index))
+        while (true)
         {
+            Console.WriteLine("Choose a card to defend with (0 to Pass):");
+            var input = Console.ReadLine();
+
+            if (!int.TryParse(input, out int index) || index < 0 || index > opponent.Hand.Count)
+            {
+                PrintInvalidOption();
+                continue;
+            }
+
             var opCard = index == 0 ? null : opponent.Hand[index - 1];
             if (index == 0)
             {
@@ -185,8 +185,15 @@ public class Program
                 PrintColored($"{op} defends with {opCard!.Name}", GetPlayerColor(op));
             }
             Pause();
-            var defenseIntent = new DeclareDefenseIntent(op, opCard);
-            var result = context.GameState.DeclareDefense(defenseIntent);
+
+            var result = context.GameState.DeclareDefense(new DeclareDefenseIntent(op, opCard));
+
+            if (!result.Success)
+            {
+                Console.WriteLine("You can't play that card. Try again.\n");
+                continue;
+            }
+
             var damageEvent = result.Events.OfType<DamageDealt>().FirstOrDefault();
             if (damageEvent != null)
             {
@@ -199,10 +206,6 @@ public class Program
             Console.WriteLine("-------------------");
             Console.WriteLine("-----Next turn-----");
             Console.WriteLine("-------------------\n");
-        }
-        else
-        {
-            PrintInvalidOption();
             return;
         }
     }
