@@ -15,6 +15,24 @@ public class PlayerStateTests
     {
         _player = new PlayerState(CreateDummyDeck(40));
     }
+
+    [Fact]
+    public void Constructor_ShufflesDeck()
+    {
+        // Arrange
+        var deck = CreateDummyDeck(40);
+        var seededRandom = new Random(42);
+
+        // Act
+        var player = new PlayerState(deck, seededRandom);
+
+        // Assert
+        Assert.NotEqual(deck, player.DrawPile);
+        var sortedOriginal = deck.OrderBy(c => c.Name).ToList();
+        var sortedShuffled = player.DrawPile.OrderBy(c => c.Name).ToList();
+        Assert.Equal(sortedOriginal, sortedShuffled);
+    }
+
     [Fact]
     public void TakeDamage_ReducesHealthByAmount_ReturnsDamageTaken()
     {

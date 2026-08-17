@@ -12,9 +12,11 @@ public class PlayerState
     private readonly List<BattleCard> _discardPile = new();
     public IReadOnlyList<BattleCard> DiscardPile => _discardPile;
 
-    public PlayerState(List<BattleCard> deck)
+    public PlayerState(List<BattleCard> deck, Random? random = null)
     {
-        _drawPile = new List<BattleCard>(deck);
+        var rng = random ?? Random.Shared;
+        _drawPile = [.. deck];
+        Shuffle(rng);
     }
 
     public int TakeDamage(int rawDamage)
@@ -89,5 +91,14 @@ public class PlayerState
         var topCard = _drawPile[^1];
         _drawPile.RemoveAt(_drawPile.Count - 1);
         return topCard;
+    }
+
+    private void Shuffle(Random rng)
+    {
+        for (int i = _drawPile.Count - 1; i > 0; i--)
+        {
+            int j = rng.Next(i + 1);
+            (_drawPile[i], _drawPile[j]) = (_drawPile[j], _drawPile[i]);
+        }
     }
 }
