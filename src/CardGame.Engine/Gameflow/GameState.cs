@@ -18,34 +18,40 @@ public class GameState
 
     public IntentResult DeclareAttack(DeclareAttackIntent intent)
     {
-        var card = intent.Card;
-
         if (!CanAttack(intent))
         {
             return IntentResultFail();
         }
 
         var attacker = GetPlayer(intent.AttackingPlayerId);
+        var events = new List<IGameEvent>();
 
-        if (!CanUseCard(attacker, card))
+        if (intent.Card != null)
         {
-            return IntentResultFail();
+            var card = intent.Card;
+            if (!CanUseCard(attacker, card))
+            {
+                return IntentResultFail();
+            }
+
+            events.Add(new AttackDeclared(intent.AttackingPlayerId, card.Attack));
+            events.Add(new EnergySpent(intent.AttackingPlayerId, card.Cost));
+
+            attacker.IncreaseMaxEnergy(card.Charge);
+            events.Add(new MaxEnergyIncreased(intent.AttackingPlayerId, card.Charge));
+
+            attacker.DiscardCard(card);
+            events.Add(new CardDiscarded(intent.AttackingPlayerId, card.Name));
+
+            _pendingAttackCard = card;
+            Phase = TurnPhase.ReadyToDefend;
         }
-
-        var events = new List<IGameEvent>
+        else
         {
-            new AttackDeclared(intent.AttackingPlayerId, card.Attack),
-        };
-        events.Add(new EnergySpent(intent.AttackingPlayerId, card.Cost));
-
-        attacker.IncreaseMaxEnergy(card.Charge);
-        events.Add(new MaxEnergyIncreased(intent.AttackingPlayerId, card.Charge));
-
-        attacker.DiscardCard(card);
-        events.Add(new CardDiscarded(intent.AttackingPlayerId, card.Name));
-
-        _pendingAttackCard = card;
-        Phase = TurnPhase.ReadyToDefend;
+            var defendingPlayerId = GetOpponentId(intent.AttackingPlayerId);
+            var defender = GetPlayer(defendingPlayerId);
+            ReadyNewTurn(defender, events, defendingPlayerId);
+        }
 
         return new IntentResult(true, events);
     }
@@ -93,7 +99,7 @@ public class GameState
             return new IntentResult(true, events);
         }
 
-        ReadyNewTurn(defender, events, intent);
+        ReadyNewTurn(defender, events, intent.DefendingPlayerId);
 
         return new IntentResult(true, events);
     }
@@ -109,21 +115,23 @@ public class GameState
     }
 
     private void ReadyNewTurn(
-        PlayerState defender,
+        PlayerState nextActivePlayer,
         List<IGameEvent> events,
-        DeclareDefenseIntent intent
+        PlayerId nextActivePlayerId
     )
     {
         Phase = TurnPhase.ReadyToAttack;
-        defender.ReplenishEnergy();
-        events.Add(new EnergyReplenishedToFull(intent.DefendingPlayerId));
-        var opponentId = GetOpponentId(intent.DefendingPlayerId);
+        nextActivePlayer.ReplenishEnergy();
+        events.Add(new EnergyReplenishedToFull(nextActivePlayerId));
+
+        var opponentId = GetOpponentId(nextActivePlayerId);
         var opponent = GetPlayer(opponentId);
         opponent.ReplenishEnergy();
         events.Add(new EnergyReplenishedToFull(opponentId));
-        opponent.DrawCard();
-        events.Add(new CardDrawn(opponentId));
-        ActivePlayer = intent.DefendingPlayerId;
+        
+        nextActivePlayer.DrawCard();
+        events.Add(new CardDrawn(nextActivePlayerId));
+        ActivePlayer = nextActivePlayerId;
     }
 
     private bool CanAttack(DeclareAttackIntent intent)

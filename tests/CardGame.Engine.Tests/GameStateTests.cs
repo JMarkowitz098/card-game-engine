@@ -170,6 +170,57 @@ public class GameStateTests
     }
 
     [Fact]
+    public void DeclareAttack_DeclineToAttack_ReturnsTrueAndSetsOpponentAsActivePlayer()
+    {
+        // Arrange
+        var context = SetupTestContext();
+        var gameState = context.GameState;
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, null);
+
+        // Act
+        var result = gameState.DeclareAttack(attackIntent);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
+        Assert.Equal(1, context.PlayerA.CurrentEnergy);
+        Assert.Equal(1, context.PlayerB.CurrentEnergy);
+        Assert.Equal(3, result.Events.Count);
+        Assert.Equal(10, context.PlayerB.CurrentHealth);
+        Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
+    }
+
+    [Fact]
+    public void DeclareAttack_DeclineToAttack_OpponentDrawsCardNotThePasser()
+    {
+        // Arrange — both players need a spare card left in their deck after the initial
+        var playerASpareCard = new BattleCard("aSpare", Element.Scor, 1, 1, 2, 1);
+        var playerAHandCard = new BattleCard("aHand", Element.Scor, 1, 1, 2, 1);
+        var playerBSpareCard = new BattleCard("bSpare", Element.Eth, 1, 1, 2, 1);
+        var playerBHandCard = new BattleCard("bHand", Element.Eth, 1, 1, 2, 1);
+
+        var playerA = new PlayerState(new List<BattleCard> { playerASpareCard, playerAHandCard });
+        var playerB = new PlayerState(new List<BattleCard> { playerBSpareCard, playerBHandCard });
+        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
+        playerA.DrawCard();
+        playerB.DrawCard();
+
+        var playerAHandBefore = playerA.Hand.Count;
+        var playerADrawPileBefore = playerA.DrawPile.Count;
+        var playerBHandBefore = playerB.Hand.Count;
+
+        // Act
+        var result = gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, null));
+
+        // Assert
+        Assert.Equal(playerAHandBefore, playerA.Hand.Count); 
+        Assert.Equal(playerADrawPileBefore, playerA.DrawPile.Count);
+        Assert.Equal(playerBHandBefore + 1, playerB.Hand.Count);
+        var cardDrawnEvent = Assert.Single(result.Events.OfType<CardDrawn>());
+        Assert.Equal(PlayerId.PlayerB, cardDrawnEvent.Player);
+    }
+
+    [Fact]
     public void TwoConsecutiveTurns_RolesReversed_BothExchangesResolveCorrectly()
     {
         // Arrange
