@@ -15,6 +15,8 @@ public class GameState
         PlayerB = playerB;
         ActivePlayer = startingPlayer;
         Phase = TurnPhase.ReadyToAttack;
+
+        GetPlayer(startingPlayer).DrawCard();
     }
 
     public IntentResult DeclareAttack(DeclareAttackIntent intent)

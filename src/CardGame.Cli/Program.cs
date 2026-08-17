@@ -47,10 +47,8 @@ public class Program
         PrintColored($"It's {ap}'s turn\n", GetPlayerColor(ap));
         PrintStatus(ap, op, player, opponent);
 
-        PrintColored($"{ap}'s hand", GetPlayerColor(ap));
-        PrintHand(player.Hand, GetPlayerColor(ap));
         Console.WriteLine($"{ap} draws a card");
-        player.DrawCard();
+        PrintColored($"{ap}'s hand", GetPlayerColor(ap));
         PrintHand(player.Hand, GetPlayerColor(ap));
 
         var attacked = ProcessAttack(context);
