@@ -53,17 +53,6 @@ tests/
     GameStateTestContext.cs
 ```
 
-## Progress
-
-- `CombatResolver` — pure damage math, fully tested.
-- `PlayerState` — health/energy/charge/hand/draw/discard, fully tested. Now shuffles on construction.
-- `GameState` — `DeclareAttack`/`DeclareDefense` orchestration, win detection, decline-to-defend. 25 tests. Gap: rejection-path coverage is thin (see Next steps).
-- `CardGame.Cli` — playable console harness: turn loop, event narration, color coding, pacing delays.
-- `StarterDeck` — tuple-list card templates → `SelectMany`/`Enumerable.Repeat` expansion into a 40-card deck. Mechanism built; card content still being authored.
-- Fixed: `ProcessAttack`/`ProcessDefense` weren't checking `DeclareAttack`/`DeclareDefense`'s `Success` — an unaffordable/invalid card silently did nothing instead of being rejected. Both now retry-loop until a valid, accepted choice is made.
-- Tooling: `.editorconfig` + analyzers, `.gitignore`, VS Code format-on-save, `CA1707` scoped-suppressed for test naming, CSharpier (local dotnet tool + VS Code extension) for layout/line-wrapping on top of the analyzers.
-- `README.md` Setup section — prerequisites + commands for a fresh clone.
-
 ## Next steps
 
 Roughly in priority order:
