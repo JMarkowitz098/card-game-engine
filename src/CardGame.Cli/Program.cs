@@ -53,8 +53,9 @@ public class Program
         player.DrawCard();
         PrintHand(player.Hand, GetPlayerColor(ap));
 
-        ProcessAttack(context);
-        ProcessDefense(context);
+        var attacked = ProcessAttack(context);
+        if (attacked)
+            ProcessDefense(context);
     }
 
     private static ConsoleColor GetPlayerColor(PlayerId id)
@@ -116,15 +117,15 @@ public class Program
         Console.WriteLine("Sorry that's not an option. Please enter a number from your hand.");
     }
 
-    private static void ProcessAttack(TurnContext context)
+    private static bool ProcessAttack(TurnContext context)
     {
         while (true)
         {
-            Console.WriteLine("Choose a card to attack with:");
+            Console.WriteLine("Choose a card to attack with (0 to pass)");
             string? input = Console.ReadLine();
             if (
                 !int.TryParse(input, out int index)
-                || index < 1
+                || index < 0
                 || index > context.Player.Hand.Count
             )
             {
@@ -132,22 +133,34 @@ public class Program
                 continue;
             }
 
-            var card = context.Player.Hand[index - 1];
-            PrintColored(
-                $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
-                GetPlayerColor(context.Ap)
-            );
-            Pause();
+            var card = index == 0 ? null : context.Player.Hand[index - 1];
+            if (card == null)
+            {
+                PrintColored($"{context.Ap} doesn't attack", GetPlayerColor(context.Ap));
+            }
+            else
+            {
+                PrintColored(
+                    $"\n{context.Ap} attacks with {card.Name} (AT {card.Attack})",
+                    GetPlayerColor(context.Ap)
+                );
+                Pause();
+            }
+
             var result = context.GameState.DeclareAttack(new DeclareAttackIntent(context.Ap, card));
 
             if (result.Success)
             {
+                if (card == null)
+                {
+                    return false;
+                }
                 Console.WriteLine("Attack successful");
                 Console.WriteLine(
                     $"Energy reduced by {card.Cost}. Max energy increased by {card.Charge} for a total of {context.Player.MaxEnergy}\n"
                 );
                 Pause();
-                return;
+                return true;
             }
 
             Console.WriteLine("You can't play that card. Try again.\n");
