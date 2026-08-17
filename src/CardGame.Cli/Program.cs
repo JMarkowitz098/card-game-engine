@@ -78,7 +78,7 @@ public class Program
     private static void PrintCard(BattleCard card, int index, ConsoleColor color)
     {
         PrintColored(
-            $"{index + 1}. {card.Name} | {card.Element} | CT: {card.Cost} | CH: {card.Charge} | AT: {card.Attack} | DF: {card.Defense}",
+            $"{index + 1}. {card.Name, -8} | {card.Element, -4} | CT: {card.Cost, -2} | CH: {card.Charge, -2} | AT: {card.Attack, -2} | DF: {card.Defense, -2}",
             color
         );
     }
