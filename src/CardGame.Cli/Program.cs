@@ -32,6 +32,17 @@ public class Program
         playerB.DrawCards(5);
         Pause();
 
+        Console.WriteLine(
+            $"\nPass the device to {s_playerAName}. Press Enter when they're ready."
+        );
+        Console.ReadLine();
+        ProcessMulligan(PlayerId.PlayerA, playerA);
+
+        HandoffTo(PlayerId.PlayerB);
+        ProcessMulligan(PlayerId.PlayerB, playerB);
+
+        HandoffTo(PlayerId.PlayerA);
+
         var gameState = MatchSetup.StartGame(playerA, playerB, PlayerId.PlayerA);
 
         // Loop
@@ -47,6 +58,40 @@ public class Program
         else
         {
             PrintColored($"Congrats {s_playerBName}! You Win!", GetPlayerColor(PlayerId.PlayerB));
+        }
+    }
+
+    private static void ProcessMulligan(PlayerId playerId, PlayerState player)
+    {
+        PrintColored($"{GetPlayerName(playerId)}'s hand", GetPlayerColor(playerId));
+        PrintHand(player.Hand, GetPlayerColor(playerId));
+
+        if (PromptMulligan(playerId))
+        {
+            player.Mulligan();
+            Console.WriteLine();
+            PrintColored($"{GetPlayerName(playerId)}'s new hand", GetPlayerColor(playerId));
+            PrintHand(player.Hand, GetPlayerColor(playerId));
+        }
+    }
+
+    private static bool PromptMulligan(PlayerId playerId)
+    {
+        while (true)
+        {
+            Console.Write($"{GetPlayerName(playerId)}, mulligan your hand? (y/n): ");
+            var input = Console.ReadLine()?.Trim().ToLowerInvariant();
+
+            if (input == "y")
+            {
+                return true;
+            }
+            if (input == "n")
+            {
+                return false;
+            }
+
+            Console.WriteLine("Please enter y or n.");
         }
     }
 
@@ -119,7 +164,7 @@ public class Program
 
     private static void Pause()
     {
-        Thread.Sleep(1000);
+        Thread.Sleep(800);
     }
 
     private static string FormatCard(BattleCard card)
