@@ -6,8 +6,8 @@ public class CombatResolverTests
     public void ResolveBattle_AttackGreaterThanDefense_ReturnsDamageDifference()
     {
         // Arrange
-        var attackingCard = new BattleCard("spark", Element.Scor, 1, 1, 2, 1);
-        var defendingCard = new BattleCard("breeze", Element.Eth, 1, 1, 2, 1);
+        var attackingCard = TestCards.Card(attack: 2);
+        var defendingCard = TestCards.Card(attack: 2);
 
         // Act
         int result = CombatResolver.ResolveBattle(attackingCard, defendingCard);
@@ -20,8 +20,8 @@ public class CombatResolverTests
     public void ResolveBattle_AttackLessThanDefense_Returns0()
     {
         // Arrange
-        var attackingCard = new BattleCard("spark", Element.Scor, 1, 1, 2, 1);
-        var defendingCard = new BattleCard("breeze", Element.Eth, 1, 1, 2, 3);
+        var attackingCard = TestCards.Card(attack: 2);
+        var defendingCard = TestCards.Card(attack: 2, defense: 3);
 
         // Act
         int result = CombatResolver.ResolveBattle(attackingCard, defendingCard);
@@ -34,7 +34,7 @@ public class CombatResolverTests
     public void ResolveBattle_AttackWithNoDefense_ReturnsDamage()
     {
         // Arrange
-        var attackingCard = new BattleCard("spark", Element.Scor, 1, 1, 2, 1);
+        var attackingCard = TestCards.Card(attack: 2);
         BattleCard? defendingCard = null;
 
         // Act
