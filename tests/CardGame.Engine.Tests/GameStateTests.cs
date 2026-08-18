@@ -124,8 +124,8 @@ public class GameStateTests
         var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, null);
 
         // Act
-        var result = gameState.DeclareAttack(attackIntent);
-        result = gameState.DeclareDefense(defenseIntent);
+        gameState.DeclareAttack(attackIntent);
+        var result = gameState.DeclareDefense(defenseIntent);
 
         // Assert
         Assert.True(result.Success);
@@ -137,6 +137,102 @@ public class GameStateTests
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
         var damageDealtEvent = Assert.IsType<DamageDealt>(result.Events[0]);
         Assert.Equal(2, damageDealtEvent.DamageValue);
+    }
+
+    [Fact]
+    public void DeclareDefense_NotReadyToDefendPhase_ReturnsFalse()
+    {
+        // Arrange
+        var gameState = CreateGameState();
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerA, TestCards.Card());
+
+        // Act
+        var result = gameState.DeclareDefense(defenseIntent);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
+        Assert.Equal(10, gameState.PlayerB.CurrentHealth);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
+    }
+
+    [Fact]
+    public void DeclareDefense_NotActivePlayer_ReturnsFalse()
+    {
+        // Arrange
+        var gameState = CreateGameState();
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerA, TestCards.Card());
+
+        // Act
+        gameState.DeclareAttack(attackIntent);
+        var result = gameState.DeclareDefense(defenseIntent);
+
+        Assert.False(result.Success);
+        Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
+        Assert.Equal(10, gameState.PlayerB.CurrentHealth);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
+    }
+
+    [Fact]
+    public void DeclareAttack_NotReadyToAttackPhase_ReturnsFalse()
+    {
+        // Arrange
+        var gameState = CreateGameState();
+        var firstAttackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+        gameState.DeclareAttack(firstAttackIntent);
+        var secondAttackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+
+        // Act
+        var result = gameState.DeclareAttack(secondAttackIntent);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
+        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
+    }
+
+    [Fact]
+    public void DeclareAttack_CardNotAffordable_ReturnsFalse()
+    {
+        // Arrange
+        var expensiveCard = TestCards.Card(cost: 2);
+        var playerADeck = new List<BattleCard> { expensiveCard };
+        var gameState = CreateGameState(playerADeck);
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, expensiveCard);
+
+        // Act
+        var result = gameState.DeclareAttack(attackIntent);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
+        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
+        Assert.Single(gameState.PlayerA.Hand);
+    }
+
+    [Fact]
+    public void DeclareDefense_CardNotAffordable_ReturnsFalse()
+    {
+        // Arrange
+        var expensiveCard = TestCards.Card(cost: 2);
+        var playerBDeck = new List<BattleCard> { expensiveCard };
+        var gameState = CreateGameState(playerBDeck: playerBDeck);
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, expensiveCard);
+
+        // Act
+        gameState.PlayerB.DrawCard();
+        gameState.DeclareAttack(attackIntent);
+        var result = gameState.DeclareDefense(defenseIntent);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
+        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(10, gameState.PlayerB.CurrentHealth);
+        Assert.Single(gameState.PlayerB.Hand);
     }
 
     [Fact]
