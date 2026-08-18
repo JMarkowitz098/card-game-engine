@@ -2,50 +2,15 @@ namespace CardGame.Engine.Tests;
 
 public class GameStateTests
 {
-    private static GameStateTestContext SetupTestContext()
+    public static GameState CreateGameState(
+        IEnumerable<BattleCard>? playerADeck = null,
+        IEnumerable<BattleCard>? playerBDeck = null,
+        PlayerId startingPlayer = PlayerId.PlayerA
+    )
     {
-        // Arrange
-        var attackCard = new BattleCard("spark", Element.Scor, 1, 1, 2, 1);
-        var defenseCard = new BattleCard("breeze", Element.Eth, 1, 1, 2, 1);
-        var playerA = new PlayerState(new List<BattleCard> { attackCard });
-        var playerB = new PlayerState(new List<BattleCard> { defenseCard });
-        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
-        playerA.DrawCard();
-        playerB.DrawCard();
-        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, attackCard);
-        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, defenseCard);
-        return new GameStateTestContext(
-            attackCard,
-            defenseCard,
-            playerA,
-            playerB,
-            gameState,
-            attackIntent,
-            defenseIntent
-        );
-    }
-
-    private static GameStateTestContext SetupGameEndContext()
-    {
-        // Arrange
-        var attackCard = new BattleCard("spark", Element.Scor, 1, 1, 20, 1);
-        var defenseCard = new BattleCard("breeze", Element.Eth, 1, 1, 2, 1);
-        var playerA = new PlayerState(new List<BattleCard> { attackCard });
-        var playerB = new PlayerState(new List<BattleCard> { defenseCard });
-        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
-        playerA.DrawCard();
-        playerB.DrawCard();
-        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, attackCard);
-        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, defenseCard);
-        return new GameStateTestContext(
-            attackCard,
-            defenseCard,
-            playerA,
-            playerB,
-            gameState,
-            attackIntent,
-            defenseIntent
-        );
+        var playerA = new PlayerState((playerADeck ?? new[] { TestCards.Card() }).ToList());
+        var playerB = new PlayerState((playerBDeck ?? new[] { TestCards.Card() }).ToList());
+        return new GameState(playerA, playerB, startingPlayer);
     }
 
     [Fact]
@@ -64,18 +29,18 @@ public class GameStateTests
     public void DeclareAttack_ValidatesAttack_ReturnsTrueAndSetsAwaitingDefensePhase()
     {
         // Arrange
-        var context = SetupTestContext();
-        var gameState = context.GameState;
+        var gameState = CreateGameState();
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
 
         // Act
-        var result = gameState.DeclareAttack(context.AttackIntent);
+        var result = gameState.DeclareAttack(attackIntent);
 
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
-        Assert.Empty(context.PlayerA.Hand);
-        Assert.Equal(0, context.PlayerA.CurrentEnergy);
-        Assert.Equal(2, context.PlayerA.MaxEnergy);
+        Assert.Empty(gameState.PlayerA.Hand);
+        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(2, gameState.PlayerA.MaxEnergy);
         Assert.Equal(4, result.Events.Count);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         var attackEvent = Assert.IsType<AttackDeclared>(result.Events[0]);
@@ -87,20 +52,22 @@ public class GameStateTests
     public void DeclareDefense_ValidatesDefenseAndUpdatesHealth_ReturnsTrueAndSetsAwaitingAttackPhase()
     {
         // Arrange
-        var context = SetupTestContext();
-        var gameState = context.GameState;
+        var gameState = CreateGameState();
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, TestCards.Card());
 
         // Act
-        var result = gameState.DeclareAttack(context.AttackIntent);
-        result = gameState.DeclareDefense(context.DefenseIntent);
+        gameState.PlayerB.DrawCard();
+        var result = gameState.DeclareAttack(attackIntent);
+        result = gameState.DeclareDefense(defenseIntent);
 
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(2, context.PlayerA.CurrentEnergy);
-        Assert.Equal(1, context.PlayerB.CurrentEnergy);
+        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(7, result.Events.Count);
-        Assert.Equal(9, context.PlayerB.CurrentHealth);
+        Assert.Equal(9, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
         var defenseEvent = Assert.IsType<DefenseDeclared>(result.Events[0]);
         Assert.Equal(PlayerId.PlayerB, defenseEvent.Defender);
@@ -111,9 +78,8 @@ public class GameStateTests
     public void DeclareAttack_WrongPlayerAttacks_ReturnsFalse()
     {
         // Arrange
-        var context = SetupTestContext();
-        var gameState = context.GameState;
-        var failingIntent = new DeclareAttackIntent(PlayerId.PlayerB, context.AttackCard);
+        var gameState = CreateGameState();
+        var failingIntent = new DeclareAttackIntent(PlayerId.PlayerB, TestCards.Card());
 
         // Act
         var result = gameState.DeclareAttack(failingIntent);
@@ -121,24 +87,28 @@ public class GameStateTests
         // Assert
         Assert.False(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(1, context.PlayerA.CurrentEnergy);
-        Assert.Equal(1, context.PlayerA.MaxEnergy);
-        Assert.Single(context.PlayerA.Hand);
+        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(1, gameState.PlayerA.MaxEnergy);
+        Assert.Single(gameState.PlayerA.Hand);
     }
 
     [Fact]
     public void DeclareDefense_PlayerHealthReducedToZero_SetsMatchEndedPhase()
     {
         // Arrange
-        var context = SetupGameEndContext();
-        var gameState = context.GameState;
+        var attackCard = TestCards.Card(attack: 20);
+        var playerADeck = new List<BattleCard> { attackCard };
+        var gameState = CreateGameState(playerADeck);
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, attackCard);
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, TestCards.Card());
 
         // Act
-        var result = gameState.DeclareAttack(context.AttackIntent);
-        result = gameState.DeclareDefense(context.DefenseIntent);
+        gameState.PlayerB.DrawCard();
+        var result = gameState.DeclareAttack(attackIntent);
+        result = gameState.DeclareDefense(defenseIntent);
 
         // Assert
-        Assert.Equal(0, context.PlayerB.CurrentHealth);
+        Assert.Equal(0, gameState.PlayerB.CurrentHealth);
         Assert.Equal(TurnPhase.MatchEnded, gameState.Phase);
         Assert.True(result.Success);
         var matchEndedEvent = Assert.IsType<MatchEnded>(result.Events[^1]);
@@ -149,21 +119,21 @@ public class GameStateTests
     public void DeclareDefense_DeclineToDefend_ReturnsTrueAndSetsAwaitingAttackPhase()
     {
         // Arrange
-        var context = SetupTestContext();
-        var gameState = context.GameState;
+        var gameState = CreateGameState();
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
         var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, null);
 
         // Act
-        var result = gameState.DeclareAttack(context.AttackIntent);
+        var result = gameState.DeclareAttack(attackIntent);
         result = gameState.DeclareDefense(defenseIntent);
 
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(2, context.PlayerA.CurrentEnergy);
-        Assert.Equal(1, context.PlayerB.CurrentEnergy);
+        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(4, result.Events.Count);
-        Assert.Equal(8, context.PlayerB.CurrentHealth);
+        Assert.Equal(8, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
         var damageDealtEvent = Assert.IsType<DamageDealt>(result.Events[0]);
         Assert.Equal(2, damageDealtEvent.DamageValue);
@@ -173,8 +143,7 @@ public class GameStateTests
     public void DeclareAttack_DeclineToAttack_ReturnsTrueAndSetsOpponentAsActivePlayer()
     {
         // Arrange
-        var context = SetupTestContext();
-        var gameState = context.GameState;
+        var gameState = CreateGameState();
         var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, null);
 
         // Act
@@ -183,39 +152,31 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(1, context.PlayerA.CurrentEnergy);
-        Assert.Equal(1, context.PlayerB.CurrentEnergy);
+        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(3, result.Events.Count);
-        Assert.Equal(10, context.PlayerB.CurrentHealth);
+        Assert.Equal(10, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
     }
 
     [Fact]
     public void DeclareAttack_DeclineToAttack_OpponentDrawsCardNotThePasser()
     {
-        // Arrange — both players need a spare card left in their deck after the initial
-        var playerASpareCard = new BattleCard("aSpare", Element.Scor, 1, 1, 2, 1);
-        var playerAHandCard = new BattleCard("aHand", Element.Scor, 1, 1, 2, 1);
-        var playerBSpareCard = new BattleCard("bSpare", Element.Eth, 1, 1, 2, 1);
-        var playerBHandCard = new BattleCard("bHand", Element.Eth, 1, 1, 2, 1);
+        // Arrange — Player B needs a spare card left in their deck for the draw triggered by A's pass
+        var playerBDeck = new List<BattleCard> { TestCards.Card(), TestCards.Card() };
+        var gameState = CreateGameState(playerBDeck: playerBDeck);
 
-        var playerA = new PlayerState(new List<BattleCard> { playerASpareCard, playerAHandCard });
-        var playerB = new PlayerState(new List<BattleCard> { playerBSpareCard, playerBHandCard });
-        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
-        playerA.DrawCard();
-        playerB.DrawCard();
-
-        var playerAHandBefore = playerA.Hand.Count;
-        var playerADrawPileBefore = playerA.DrawPile.Count;
-        var playerBHandBefore = playerB.Hand.Count;
+        var playerAHandBefore = gameState.PlayerA.Hand.Count;
+        var playerADrawPileBefore = gameState.PlayerA.DrawPile.Count;
+        var playerBHandBefore = gameState.PlayerB.Hand.Count;
 
         // Act
         var result = gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, null));
 
         // Assert
-        Assert.Equal(playerAHandBefore, playerA.Hand.Count); 
-        Assert.Equal(playerADrawPileBefore, playerA.DrawPile.Count);
-        Assert.Equal(playerBHandBefore + 1, playerB.Hand.Count);
+        Assert.Equal(playerAHandBefore, gameState.PlayerA.Hand.Count);
+        Assert.Equal(playerADrawPileBefore, gameState.PlayerA.DrawPile.Count);
+        Assert.Equal(playerBHandBefore + 1, gameState.PlayerB.Hand.Count);
         var cardDrawnEvent = Assert.Single(result.Events.OfType<CardDrawn>());
         Assert.Equal(PlayerId.PlayerB, cardDrawnEvent.Player);
     }
@@ -223,21 +184,17 @@ public class GameStateTests
     [Fact]
     public void TwoConsecutiveTurns_RolesReversed_BothExchangesResolveCorrectly()
     {
-        // Arrange
-        var playerAAttackCard = new BattleCard("aAttack", Element.Scor, 1, 1, 2, 1);
-        var playerADefendCard = new BattleCard("aDefend", Element.Eth, 1, 1, 2, 1);
-        var playerBDefendCard = new BattleCard("bDefend", Element.Eth, 1, 1, 2, 1);
-        var playerBAttackCard = new BattleCard("bAttack", Element.Scor, 1, 1, 2, 1);
+        // Arrange — each player needs two cards in hand: one to attack with, one to defend with
+        var playerADeck = new List<BattleCard> { TestCards.Card(), TestCards.Card() };
+        var playerBDeck = new List<BattleCard> { TestCards.Card(), TestCards.Card() };
+        var gameState = CreateGameState(playerADeck, playerBDeck);
+        gameState.PlayerA.DrawCard();
+        gameState.PlayerB.DrawCards(2);
 
-        var playerA = new PlayerState(
-            new List<BattleCard> { playerADefendCard, playerAAttackCard }
-        );
-        var playerB = new PlayerState(
-            new List<BattleCard> { playerBAttackCard, playerBDefendCard }
-        );
-        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
-        playerA.DrawCards(2);
-        playerB.DrawCards(2);
+        var playerAAttackCard = gameState.PlayerA.Hand[0];
+        var playerADefendCard = gameState.PlayerA.Hand[1];
+        var playerBAttackCard = gameState.PlayerB.Hand[0];
+        var playerBDefendCard = gameState.PlayerB.Hand[1];
 
         // Act + Assert: Turn 1 — Player A attacks, Player B defends
         var turn1AttackResult = gameState.DeclareAttack(
@@ -249,7 +206,7 @@ public class GameStateTests
 
         Assert.True(turn1AttackResult.Success);
         Assert.True(turn1DefenseResult.Success);
-        Assert.Equal(9, playerB.CurrentHealth);
+        Assert.Equal(9, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
 
         // Act: Turn 2 — roles reversed, Player B attacks, Player A defends
@@ -265,13 +222,17 @@ public class GameStateTests
         Assert.True(turn2DefenseResult.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
-        Assert.Equal(9, playerA.CurrentHealth);
-        Assert.Equal(9, playerB.CurrentHealth); // unchanged since turn 1 — Player B was attacking, not defending
-        Assert.Equal(2, playerA.MaxEnergy);
-        Assert.Equal(2, playerB.MaxEnergy);
-        Assert.Equal(2, playerA.CurrentEnergy);
-        Assert.Equal(2, playerB.CurrentEnergy);
-        Assert.Empty(playerA.Hand);
-        Assert.Empty(playerB.Hand);
+        Assert.Equal(9, gameState.PlayerA.CurrentHealth);
+        Assert.Equal(9, gameState.PlayerB.CurrentHealth); // unchanged since turn 1 — Player B was attacking, not defending
+        Assert.Equal(2, gameState.PlayerA.MaxEnergy);
+        Assert.Equal(2, gameState.PlayerB.MaxEnergy);
+        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(2, gameState.PlayerB.CurrentEnergy);
+        Assert.Empty(gameState.PlayerA.Hand);
+        Assert.Empty(gameState.PlayerB.Hand);
     }
+
+    [Fact(Skip = "To be implemented")]
+    public void DeclareAttack_AttemptToPlayCardThatSharesNameButIsDifferentInstance_ReturnsFalse() // Maybe throw
+    { }
 }

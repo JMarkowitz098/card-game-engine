@@ -8,7 +8,7 @@ public class PlayerStateTests
     {
         return Enumerable
             .Range(0, count)
-            .Select(i => new BattleCard($"card{i}", Element.Scor, 1, 1, 1, 1))
+            .Select(i => TestCards.Card(name: $"card{i}", attack: 2))
             .ToList();
     }
 
