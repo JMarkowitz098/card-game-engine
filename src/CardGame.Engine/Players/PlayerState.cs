@@ -11,12 +11,13 @@ public class PlayerState
     public IReadOnlyList<BattleCard> DrawPile => _drawPile;
     private readonly List<BattleCard> _discardPile = new();
     public IReadOnlyList<BattleCard> DiscardPile => _discardPile;
+    private readonly Random _rng;
 
     public PlayerState(List<BattleCard> deck, Random? random = null)
     {
-        var rng = random ?? Random.Shared;
+        _rng = random ?? Random.Shared;
         _drawPile = [.. deck];
-        Shuffle(rng);
+        Shuffle();
     }
 
     public int TakeDamage(int rawDamage)
@@ -87,6 +88,36 @@ public class PlayerState
         return true;
     }
 
+    public bool ReturnCard(BattleCard card)
+    {
+        if (!_hand.Remove(card))
+        {
+            return false;
+        }
+
+        _drawPile.Add(card);
+        return true;
+    }
+
+    public bool ReturnCards(List<BattleCard> cards)
+    {
+        foreach (var card in cards)
+        {
+            if (!ReturnCard(card))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public bool Mulligan()
+    {
+        ReturnCards(Hand.ToList());
+        Shuffle();
+        return DrawCards(5);
+    }
+
     private BattleCard PopTopCard()
     {
         var topCard = _drawPile[^1];
@@ -94,11 +125,11 @@ public class PlayerState
         return topCard;
     }
 
-    private void Shuffle(Random rng)
+    public void Shuffle()
     {
         for (int i = _drawPile.Count - 1; i > 0; i--)
         {
-            int j = rng.Next(i + 1);
+            int j = _rng.Next(i + 1);
             (_drawPile[i], _drawPile[j]) = (_drawPile[j], _drawPile[i]);
         }
     }

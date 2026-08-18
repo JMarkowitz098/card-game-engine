@@ -24,7 +24,6 @@ public class Program
         // Setup
         var playerA = new PlayerState(StarterDeck.Create());
         var playerB = new PlayerState(StarterDeck.Create());
-        var gameState = new GameState(playerA, playerB, PlayerId.PlayerA);
         Console.WriteLine($"\n{s_playerAName} created. Deck 40/40");
         Console.WriteLine($"{s_playerBName} created. Deck 40/40\n");
         Console.WriteLine($"{s_playerAName} draws 5 cards");
@@ -32,6 +31,8 @@ public class Program
         Console.WriteLine($"{s_playerBName} draws 5 cards\n");
         playerB.DrawCards(5);
         Pause();
+
+        var gameState = MatchSetup.StartGame(playerA, playerB, PlayerId.PlayerA);
 
         // Loop
         while (playerA.CurrentHealth > 0 && playerB.CurrentHealth > 0)

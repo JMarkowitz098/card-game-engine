@@ -227,9 +227,112 @@ public class PlayerStateTests
         // Act
         bool result = _player.DiscardCard(card);
 
-        //Assert
+        // Assert
         Assert.Empty(_player.Hand);
         Assert.Empty(_player.DiscardPile);
         Assert.False(result);
+    }
+
+    [Fact]
+    public void ReturnCard_MovesCardFromHandToTopOfDeck_ReturnsTrue()
+    {
+        // Act
+        _player.DrawCard();
+        var card = _player.Hand[0];
+        var result = _player.ReturnCard(card);
+
+        // Assert
+        Assert.Empty(_player.Hand);
+        Assert.Empty(_player.DiscardPile);
+        Assert.True(result);
+        Assert.Equal(card, _player.DrawPile[^1]);
+        Assert.Equal(40, _player.DrawPile.Count);
+    }
+
+    [Fact]
+    public void ReturnCard_HandIsEmpty_ReturnsFalse()
+    {
+        // Act
+        var result = _player.ReturnCard(_player.DrawPile[0]);
+
+        // Assert
+        Assert.Empty(_player.Hand);
+        Assert.Empty(_player.DiscardPile);
+        Assert.False(result);
+        Assert.Equal(40, _player.DrawPile.Count);
+    }
+
+    [Fact]
+    public void ReturnCard_HandHasMultipleCards_MovesCorrectCardFromHAndToTopOfDeckAndReturnsTrue()
+    {
+        // Act
+        _player.DrawCard();
+        _player.DrawCard();
+        _player.DrawCard();
+        _player.DrawCard();
+        _player.DrawCard();
+        var card = _player.Hand[3];
+        var result = _player.ReturnCard(card);
+
+        // Assert
+        Assert.Equal(4, _player.Hand.Count);
+        Assert.Equal(36, _player.DrawPile.Count);
+        Assert.Empty(_player.DiscardPile);
+        Assert.True(result);
+        Assert.Equal(card, _player.DrawPile[^1]);
+    }
+
+    [Fact]
+    public void ReturnCards_MovesAllCardsFromHandToDrawPile_ReturnsTrue()
+    {
+        // Arrange
+        _player.DrawCards(5);
+        var cardsToReturn = _player.Hand.ToList();
+
+        // Act
+        var result = _player.ReturnCards(cardsToReturn);
+
+        // Assert
+        Assert.True(result);
+        Assert.Empty(_player.Hand);
+        Assert.Equal(40, _player.DrawPile.Count);
+    }
+
+    [Fact]
+    public void ReturnCards_ContainsCardNotInHand_ReturnsFalseAndStopsAtFirstFailure()
+    {
+        // Arrange
+        _player.DrawCards(2);
+        var validCard = _player.Hand[0];
+        var secondValidCard = _player.Hand[1];
+        var cardNotInHand = _player.DrawPile[0];
+        var cardsToReturn = new List<BattleCard> { validCard, cardNotInHand, secondValidCard };
+
+        // Act
+        var result = _player.ReturnCards(cardsToReturn);
+
+        // Assert
+        Assert.False(result);
+        Assert.Single(_player.Hand);
+        Assert.Equal(secondValidCard, _player.Hand[0]);
+        Assert.Equal(39, _player.DrawPile.Count);
+    }
+
+    [Fact]
+    public void Mulligan_ReturnsHandAndDrawsNewFiveCards_HandChangesButCountAndDrawPileStayTheSame()
+    {
+        // Arrange
+        _player.DrawCards(5);
+        var originalHand = _player.Hand.ToList();
+
+        // Act
+        var result = _player.Mulligan();
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(5, _player.Hand.Count);
+        Assert.NotEqual(originalHand, _player.Hand);
+        Assert.Equal(35, _player.DrawPile.Count);
+        Assert.Empty(_player.DiscardPile);
     }
 }
