@@ -23,6 +23,7 @@ A simple console based UI for testing the engine and simulating games
 - **Deck shuffling:** `PlayerState` shuffles its deck (Fisher-Yates) on construction. Seedable via an optional `Random` param for tests; `Random.Shared` otherwise.
 - **Draw timing:** exactly one draw per attack-turn. The very first turn's draw happens in `GameState`'s constructor; every turn after that comes from `ReadyNewTurn`. The CLI never triggers a draw itself, only narrates one having happened.
 - **Mulligan ordering:** mulligan must fully resolve before `GameState` is constructed — its constructor's turn-1 draw would otherwise land inside the hand being mulliganed, since both live in the same `Hand` list with nothing to tell them apart. `MatchSetup.StartGame` takes already-dealt, already-mulligan-resolved `PlayerState`s for this reason; it doesn't deal cards itself.
+- **Multiple attacks:** an attacker keeps `ActivePlayer` after a resolved exchange and may attack again — `DeclareDefense` no longer advances the turn itself, it just resets `Phase` to `ReadyToAttack`. Only an explicit pass (`DeclareAttackIntent.Card == null`) triggers `ReadyNewTurn` (swap `ActivePlayer`, replenish both players, draw). Energy doesn't replenish between attacks within the same turn, so a defender can run out of energy to defend with mid-turn and be forced to decline.
 
 ## To Be Implemented
 
@@ -63,12 +64,11 @@ tests/
 
 Toward a feature-complete MVP — rules/logic fully in place, remaining work after this is just cards, values, and card variety. Multi-week effort; in order:
 
-1. **Multiple Attacks** - If the attacker still has energy, they can attack multiple times before ending their turn and passing to the other player. The opponent still gets a chance to defend each attack. Because of this, even at 0 energy the attacker should confirm they are ending their turn with a pass
-2. **Simple AI opponent** — just a different intent source feeding the same `DeclareAttack`/`DeclareDefense` flow; cheap given the existing architecture.
-3. **Deck constraints + catalog** — enforce max 4 copies of any card per 40-card deck (likely its own small `Deck`-validation type — this doesn't cleanly belong to `PlayerState` or `GameState`); expand the card catalog beyond the current 14 themed templates. `StarterDeck` itself will need renaming/reshaping here too — once it's the pool every deck gets built from, "starter deck" won't describe it anymore.
-4. **Blazor WebAssembly front end** — reuses `CardGame.Engine` unchanged (the zero-framework-dependency rule from day one pays off here); hotseat UI replacing the console's hide/reveal flow, plus a replay option.
-5. **Deck builder UI** — browse the catalog, assemble a legal deck, `localStorage` persistence across visits, import/export (copy/paste or download a deck list).
-6. **Deploy to GitHub Pages** — static hosting, no backend needed for this scope.
+1. **Simple AI opponent** — just a different intent source feeding the same `DeclareAttack`/`DeclareDefense` flow; cheap given the existing architecture.
+2. **Deck constraints + catalog** — enforce max 4 copies of any card per 40-card deck (likely its own small `Deck`-validation type — this doesn't cleanly belong to `PlayerState` or `GameState`); expand the card catalog beyond the current 14 themed templates. `StarterDeck` itself will need renaming/reshaping here too — once it's the pool every deck gets built from, "starter deck" won't describe it anymore.
+3. **Blazor WebAssembly front end** — reuses `CardGame.Engine` unchanged (the zero-framework-dependency rule from day one pays off here); hotseat UI replacing the console's hide/reveal flow, plus a replay option.
+4. **Deck builder UI** — browse the catalog, assemble a legal deck, `localStorage` persistence across visits, import/export (copy/paste or download a deck list).
+5. **Deploy to GitHub Pages** — static hosting, no backend needed for this scope.
 
 Also still open, not blocking the sequence above:
 
