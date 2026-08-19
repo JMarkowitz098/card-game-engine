@@ -13,6 +13,17 @@ public class GameStateTests
         return new GameState(playerA, playerB, startingPlayer);
     }
 
+    private static List<BattleCard> CreateTestDeck(PlayerId id)
+    {
+        return new List<BattleCard>
+        {
+            TestCards.Card(name: $"{id}-card1"),
+            TestCards.Card(name: $"{id}-card2"),
+            TestCards.Card(name: $"{id}-card3"),
+            TestCards.Card(name: $"{id}-card4"),
+        };
+    }
+
     [Fact]
     public void Constructor_SetsActivePlayerAndAwaitingAttackPhase()
     {
@@ -26,7 +37,7 @@ public class GameStateTests
     }
 
     [Fact]
-    public void DeclareAttack_ValidatesAttack_ReturnsTrueAndSetsAwaitingDefensePhase()
+    public void DeclareAttack_ValidatesAttack_ReturnsTrue()
     {
         // Arrange
         var gameState = CreateGameState();
@@ -49,7 +60,7 @@ public class GameStateTests
     }
 
     [Fact]
-    public void DeclareDefense_ValidatesDefenseAndUpdatesHealth_ReturnsTrueAndSetsAwaitingAttackPhase()
+    public void DeclareDefense_ValidatesDefenseAndUpdatesHealth_ReturnsTrueSetsAwaitingAttackPhase()
     {
         // Arrange
         var gameState = CreateGameState();
@@ -64,11 +75,11 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
-        Assert.Equal(7, result.Events.Count);
+        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(0, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(4, result.Events.Count);
         Assert.Equal(9, gameState.PlayerB.CurrentHealth);
-        Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         var defenseEvent = Assert.IsType<DefenseDeclared>(result.Events[0]);
         Assert.Equal(PlayerId.PlayerB, defenseEvent.Defender);
         Assert.Equal(1, defenseEvent.DefendValue);
@@ -130,11 +141,11 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
         Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
-        Assert.Equal(4, result.Events.Count);
+        Assert.Single(result.Events);
         Assert.Equal(8, gameState.PlayerB.CurrentHealth);
-        Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         var damageDealtEvent = Assert.IsType<DamageDealt>(result.Events[0]);
         Assert.Equal(2, damageDealtEvent.DamageValue);
     }
@@ -303,7 +314,10 @@ public class GameStateTests
         Assert.True(turn1AttackResult.Success);
         Assert.True(turn1DefenseResult.Success);
         Assert.Equal(9, gameState.PlayerB.CurrentHealth);
-        Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
+
+        // Pass to change turn
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, null));
 
         // Act: Turn 2 — roles reversed, Player B attacks, Player A defends
         var turn2AttackResult = gameState.DeclareAttack(
@@ -312,6 +326,7 @@ public class GameStateTests
         var turn2DefenseResult = gameState.DeclareDefense(
             new DeclareDefenseIntent(PlayerId.PlayerA, playerADefendCard)
         );
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerB, null));
 
         // Assert: turn 2 — the defender is now Player A, not Player B (the exact bug class fixed earlier)
         Assert.True(turn2AttackResult.Success);
@@ -319,13 +334,48 @@ public class GameStateTests
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         Assert.Equal(9, gameState.PlayerA.CurrentHealth);
-        Assert.Equal(9, gameState.PlayerB.CurrentHealth); // unchanged since turn 1 — Player B was attacking, not defending
+        Assert.Equal(9, gameState.PlayerB.CurrentHealth);
         Assert.Equal(2, gameState.PlayerA.MaxEnergy);
         Assert.Equal(2, gameState.PlayerB.MaxEnergy);
         Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
         Assert.Equal(2, gameState.PlayerB.CurrentEnergy);
         Assert.Empty(gameState.PlayerA.Hand);
         Assert.Empty(gameState.PlayerB.Hand);
+    }
+
+    [Fact]
+    public void DeclareAttack_PlayerCanAttackMultipleTimes_ReturnsTrue()
+    {
+        // Arrange
+        var playerADeck = CreateTestDeck(PlayerId.PlayerA);
+        var playerBDeck = CreateTestDeck(PlayerId.PlayerB);
+
+        var gameState = CreateGameState(playerADeck, playerBDeck);
+        gameState.PlayerA.DrawCards(4);
+        gameState.PlayerB.DrawCards(4);
+        var playerAHand = gameState.PlayerA.Hand;
+        var playerBHand = gameState.PlayerB.Hand;
+
+        // Act
+        // Turn 1 — Player A attacks, Player B defends,
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, playerAHand[0]));
+        gameState.DeclareDefense(new DeclareDefenseIntent(PlayerId.PlayerB, playerBHand[0]));
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, null));
+
+        // Turn 1 — Player B Attacks (Passes)
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerB, null));
+
+        // Turn 2 - Player A attacks
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, playerAHand[0]));
+        gameState.DeclareDefense(new DeclareDefenseIntent(PlayerId.PlayerB, playerBHand[0]));
+        Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer); // Ensure attacker has not changed
+        gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, playerAHand[0]));
+        gameState.DeclareDefense(new DeclareDefenseIntent(PlayerId.PlayerB, null));
+        var result = gameState.DeclareAttack(new DeclareAttackIntent(PlayerId.PlayerA, null));
+
+        // Assert
+        Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
+        Assert.True(result.Success);
     }
 
     [Fact(Skip = "To be implemented")]

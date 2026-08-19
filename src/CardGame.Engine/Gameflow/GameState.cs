@@ -104,7 +104,7 @@ public class GameState
             return new IntentResult(true, events);
         }
 
-        ReadyNewTurn(defender, events, intent.DefendingPlayerId);
+        Phase = TurnPhase.ReadyToAttack;
 
         return new IntentResult(true, events);
     }

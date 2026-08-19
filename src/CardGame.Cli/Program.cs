@@ -106,18 +106,30 @@ public class Program
         PrintStatus(ap, op, player, opponent);
 
         Console.WriteLine($"{GetPlayerName(ap)} draws a card");
-        PrintColored($"{GetPlayerName(ap)}'s hand", GetPlayerColor(ap));
-        PrintHand(player.Hand, GetPlayerColor(ap));
 
-        var attacked = ProcessAttack(context);
-        if (attacked)
+        while (true)
         {
+            PrintColored($"{GetPlayerName(ap)}'s hand", GetPlayerColor(ap));
+            PrintHand(player.Hand, GetPlayerColor(ap));
+
+            var attacked = ProcessAttack(context);
+            if (!attacked)
+            {
+                break;
+            }
+
             HandoffTo(context.Op);
             ProcessDefense(context);
 
             HandoffTo(context.Ap);
             PrintDefenseSummary(context);
+
+            if (gameState.Phase == TurnPhase.MatchEnded)
+            {
+                return;
+            }
         }
+
         HandoffTo(gameState.ActivePlayer);
     }
 
