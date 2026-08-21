@@ -29,3 +29,10 @@ Open the folder in VS Code — `.vscode/settings.json` is checked in and already
 
 // Run client
 dotnet run --project src/CardGame.Cli
+
+### Create a new section, add it to the solution, and create references
+dotnet new classlib -n CardGame{NewSection} -o src/CardGame{NewSection} 
+dotnet sln CardGame.slnx add src/CardGame{NewSection}/CardGame{NewSection}.csproj
+dotnet add src/CardGame.{NewSection}/CardGame.{NewSection}.csproj reference src/CardGame.Engine/CardGame.Engine.csproj
+dotnet add src/CardGame.Cli/CardGame.Cli.csproj reference src/CardGame.{NewSection}/CardGame.{NewSection}.csproj
+dotnet build
