@@ -8,5 +8,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/CardGame.Ai.Tests/CardGame.Ai.Tests.csproj" />
     <Project Path="tests/CardGame.Engine.Tests/CardGame.Engine.Tests.csproj" />
+    <Project Path="tests/CardGame.Web.Tests/CardGame.Web.Tests.csproj" />
   </Folder>
 </Solution>
