@@ -1,0 +1,20 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Card Game</h1>
+
+<h2>New Game</h2>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Vs Human</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Vs Computer</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+

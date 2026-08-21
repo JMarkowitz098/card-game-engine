@@ -3,6 +3,7 @@
     <Project Path="src/CardGame.Ai/CardGame.Ai.csproj" />
     <Project Path="src/CardGame.Cli/CardGame.Cli.csproj" />
     <Project Path="src/CardGame.Engine/CardGame.Engine.csproj" />
+    <Project Path="src/CardGame.Web/CardGame.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CardGame.Ai.Tests/CardGame.Ai.Tests.csproj" />

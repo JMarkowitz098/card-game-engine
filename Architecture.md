@@ -24,6 +24,7 @@ A simple console based UI for testing the engine and simulating games
 - **Draw timing:** exactly one draw per attack-turn. The very first turn's draw happens in `GameState`'s constructor; every turn after that comes from `ReadyNewTurn`. The CLI never triggers a draw itself, only narrates one having happened.
 - **Mulligan ordering:** mulligan must fully resolve before `GameState` is constructed — its constructor's turn-1 draw would otherwise land inside the hand being mulliganed, since both live in the same `Hand` list with nothing to tell them apart. `MatchSetup.StartGame` takes already-dealt, already-mulligan-resolved `PlayerState`s for this reason; it doesn't deal cards itself.
 - **Multiple attacks:** an attacker keeps `ActivePlayer` after a resolved exchange and may attack again — `DeclareDefense` no longer advances the turn itself, it just resets `Phase` to `ReadyToAttack`. Only an explicit pass (`DeclareAttackIntent.Card == null`) triggers `ReadyNewTurn` (swap `ActivePlayer`, replenish both players, draw). Energy doesn't replenish between attacks within the same turn, so a defender can run out of energy to defend with mid-turn and be forced to decline.
+- **Simple AI:** `CardGame.Ai.Logic.DeclareAttack`/`DeclareDefense` pick from the AI's affordable cards only. Attack: highest `Attack`, tie-broken by lowest `Cost`, then highest `Charge`, then lowest `Defense`, then first-found. Defense: greatest damage reduction (`Defense` capped at the incoming attack value), tie-broken by lowest `Cost`. Either returns `null` (pass/decline) if nothing in hand is affordable.
 
 ## To Be Implemented
 
@@ -47,6 +48,8 @@ src/
     Gameflow/               GameState.cs, MatchSetup.cs, PlayerId.cs, TurnPhase.cs
     Intents/                DeclareAttackIntent.cs, DeclareDefenseIntent.cs, IntentResults.cs
     Players/                PlayerState.cs
+  CardGame.Ai/              — simple AI opponent; references CardGame.Engine only
+    Logic.cs                DeclareAttack/DeclareDefense card-selection
   CardGame.Cli/             — playable console harness
     Program.cs
     TurnContext.cs
@@ -58,17 +61,18 @@ tests/
     GameStateTests.cs
     MatchSetupTests.cs
     TestCards.cs            — shared card-builder helper for tests
+  CardGame.Ai.Tests/        — xUnit, references CardGame.Ai + CardGame.Engine.Tests (reuses TestCards)
+    LogicTests.cs
 ```
 
 ## Roadmap
 
 Toward a feature-complete MVP — rules/logic fully in place, remaining work after this is just cards, values, and card variety. Multi-week effort; in order:
 
-1. **Simple AI opponent** — just a different intent source feeding the same `DeclareAttack`/`DeclareDefense` flow; cheap given the existing architecture.
-2. **Deck constraints + catalog** — enforce max 4 copies of any card per 40-card deck (likely its own small `Deck`-validation type — this doesn't cleanly belong to `PlayerState` or `GameState`); expand the card catalog beyond the current 14 themed templates. `StarterDeck` itself will need renaming/reshaping here too — once it's the pool every deck gets built from, "starter deck" won't describe it anymore.
-3. **Blazor WebAssembly front end** — reuses `CardGame.Engine` unchanged (the zero-framework-dependency rule from day one pays off here); hotseat UI replacing the console's hide/reveal flow, plus a replay option.
-4. **Deck builder UI** — browse the catalog, assemble a legal deck, `localStorage` persistence across visits, import/export (copy/paste or download a deck list).
-5. **Deploy to GitHub Pages** — static hosting, no backend needed for this scope.
+1. **Blazor WebAssembly front end** — reuses `CardGame.Engine` unchanged (the zero-framework-dependency rule from day one pays off here); hotseat UI replacing the console's hide/reveal flow, plus a replay option.
+2. **Deck constraints + catalog** — enforce max 4 copies of any card per 40-card deck (likely its own small `Deck`-validation type — this doesn't cleanly belong to `PlayerState` or `GameState`); expand the card catalog beyond the current 14 themed templates. `StarterDeck` itself will need renaming/reshaping here too — once it's the pool every deck gets built from, "starter deck" won't describe it anymore. Deferred to sit right before the deck builder below, since nothing produces a candidate deck to validate until then.
+3. **Deck builder UI** — browse the catalog, assemble a legal deck, `localStorage` persistence across visits, import/export (copy/paste or download a deck list).
+4. **Deploy to GitHub Pages** — static hosting, no backend needed for this scope.
 
 Also still open, not blocking the sequence above:
 
