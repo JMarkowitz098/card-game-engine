@@ -10,6 +10,11 @@ The core of the program that runs the game and processes logic. Intended to be f
 ## Cli
 A simple console based UI for testing the engine and simulating games
 
+## Web Client (in progress)
+`CardGame.Web` — Blazor WebAssembly, references `CardGame.Engine` only. Single page, hotseat (no separate routes per player); human-vs-human first, `CardGame.Ai` wiring deferred until that works end-to-end.
+- `GameSessionService` — DI-registered, holds the live `PlayerState`s/`GameState`, thin wrappers around `GameState.DeclareAttack`/`DeclareDefense`, raises a `Changed` event after any mutation for components to re-render on.
+- `PendingHandoffTo` — replaces the CLI's blocking `HandoffTo` calls; set to whichever player should see the screen next after an action, cleared by a privacy-overlay component's "I'm ready" button.
+
 ## Confirmed rule interpretations
 
 - **Energy replenish:** at the start of *every* turn, **both** players' energy refills to their own current max — not just the active player's.
@@ -54,6 +59,10 @@ src/
     Program.cs
     TurnContext.cs
     StarterDeck.cs          — card templates + deck-expansion; one themed set of 14 templates so far
+  CardGame.Web/             — Blazor WebAssembly front end; references CardGame.Engine only
+    Pages/                  Home.razor; Counter.razor/Weather.razor/NotFound.razor are unremoved template placeholders
+    Layout/                 MainLayout.razor, NavMenu.razor
+    Services/               GameSessionService.cs (stub, not yet implemented)
 tests/
   CardGame.Engine.Tests/    — xUnit, references CardGame.Engine
     CombatResolverTests.cs
@@ -63,6 +72,8 @@ tests/
     TestCards.cs            — shared card-builder helper for tests
   CardGame.Ai.Tests/        — xUnit, references CardGame.Ai + CardGame.Engine.Tests (reuses TestCards)
     LogicTests.cs
+  CardGame.Web.Tests/       — xUnit, references CardGame.Web + CardGame.Engine.Tests (reuses TestCards)
+    GameSessionServiceTests.cs (placeholder test, not yet written)
 ```
 
 ## Roadmap
