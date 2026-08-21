@@ -4,7 +4,7 @@ namespace CardGame.Ai;
 
 public class Logic
 {
-    public static BattleCard? DeclareAttack(List<BattleCard> hand, int energy)
+    public static BattleCard? DeclareAttack(IReadOnlyList<BattleCard> hand, int energy)
     {
         return hand
             .Where(card => card.Cost <= energy)
@@ -15,7 +15,7 @@ public class Logic
             .FirstOrDefault();
     }
 
-    public static BattleCard? DeclareDefense(List<BattleCard> hand, int energy, int incomingAttack)
+    public static BattleCard? DeclareDefense(IReadOnlyList<BattleCard> hand, int energy, int incomingAttack)
     {
         return hand
             .Where(card => card.Cost <= energy)

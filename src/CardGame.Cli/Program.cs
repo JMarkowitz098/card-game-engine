@@ -1,3 +1,4 @@
+using CardGame.Ai;
 using CardGame.Engine;
 
 namespace CardGame.Cli;
@@ -6,6 +7,7 @@ public class Program
 {
     private static string s_playerAName = "PlayerA";
     private static string s_playerBName = "PlayerB";
+    private static bool s_isAi;
 
     static void Main(string[] args)
     {
@@ -13,13 +15,26 @@ public class Program
         Console.WriteLine("The Elemental Chronicles TCG Battler");
         Console.WriteLine("------------------------------------\n");
 
+        Console.WriteLine("Who do you want to play against?");
+        Console.WriteLine("1. Computer");
+        Console.WriteLine("2. Another Human");
+        var input = Console.ReadLine();
+
         Console.Write("Enter a name for Player A (press Enter for default): ");
         var nameAInput = Console.ReadLine();
         s_playerAName = string.IsNullOrWhiteSpace(nameAInput) ? "PlayerA" : nameAInput;
-
-        Console.Write("Enter a name for Player B (press Enter for default): ");
-        var nameBInput = Console.ReadLine();
-        s_playerBName = string.IsNullOrWhiteSpace(nameBInput) ? "PlayerB" : nameBInput;
+        if (input == "1")
+        {
+            s_playerBName = "Computer";
+            s_isAi = true;
+        }
+        else
+        {
+            Console.Write("Enter a name for Player B (press Enter for default): ");
+            var nameBInput = Console.ReadLine();
+            s_playerBName = string.IsNullOrWhiteSpace(nameBInput) ? "PlayerB" : nameBInput;
+            s_isAi = false;
+        }
 
         // Setup
         var playerA = new PlayerState(StarterDeck.Create());
@@ -32,16 +47,16 @@ public class Program
         playerB.DrawCards(5);
         Pause();
 
-        Console.WriteLine(
-            $"\nPass the device to {s_playerAName}. Press Enter when they're ready."
-        );
+        Console.WriteLine($"\nPass the device to {s_playerAName}. Press Enter when they're ready.");
         Console.ReadLine();
         ProcessMulligan(PlayerId.PlayerA, playerA);
 
-        HandoffTo(PlayerId.PlayerB);
-        ProcessMulligan(PlayerId.PlayerB, playerB);
-
-        HandoffTo(PlayerId.PlayerA);
+        if (!s_isAi)
+        {
+            HandoffTo(PlayerId.PlayerB);
+            ProcessMulligan(PlayerId.PlayerB, playerB);
+            HandoffTo(PlayerId.PlayerA);
+        }
 
         var gameState = MatchSetup.StartGame(playerA, playerB, PlayerId.PlayerA);
 
@@ -109,8 +124,11 @@ public class Program
 
         while (true)
         {
-            PrintColored($"{GetPlayerName(ap)}'s hand", GetPlayerColor(ap));
-            PrintHand(player.Hand, GetPlayerColor(ap));
+            if (!IsAisTurn(ap))
+            {
+                PrintColored($"{GetPlayerName(ap)}'s hand", GetPlayerColor(ap));
+                PrintHand(player.Hand, GetPlayerColor(ap));
+            }
 
             var attacked = ProcessAttack(context);
             if (!attacked)
@@ -118,10 +136,10 @@ public class Program
                 break;
             }
 
-            HandoffTo(context.Op);
+            MaybeHandoffTo(context.Op);
             ProcessDefense(context);
 
-            HandoffTo(context.Ap);
+            MaybeHandoffTo(context.Ap);
             PrintDefenseSummary(context);
 
             if (gameState.Phase == TurnPhase.MatchEnded)
@@ -130,30 +148,11 @@ public class Program
             }
         }
 
-        HandoffTo(gameState.ActivePlayer);
+        MaybeHandoffTo(gameState.ActivePlayer);
     }
 
     private static void PrintDefenseSummary(TurnContext context)
     {
-        var gameState = context.GameState;
-        var lastDefenseCard = gameState.GetLastDefenseCard();
-        if (lastDefenseCard == null)
-        {
-            PrintColored($"{GetPlayerName(context.Op)} doesn't defend", GetPlayerColor(context.Op));
-        }
-        else
-        {
-            PrintColored(
-                $"{GetPlayerName(context.Op)} defends with {FormatCard(lastDefenseCard)}",
-                GetPlayerColor(context.Op)
-            );
-        }
-
-        var damage = CombatResolver.ResolveBattle(
-            gameState.GetPendingAttackCard()!,
-            lastDefenseCard
-        );
-        PrintColored($"{GetPlayerName(context.Op)} took {damage} damage!\n", ConsoleColor.Red);
         PrintStatus(context.Ap, context.Op, context.Player, context.Opponent);
     }
 
@@ -236,19 +235,27 @@ public class Program
     {
         while (true)
         {
-            Console.WriteLine("Choose a card to attack with (0 to pass)");
-            string? input = Console.ReadLine();
-            if (
-                !int.TryParse(input, out int index)
-                || index < 0
-                || index > context.Player.Hand.Count
-            )
+            BattleCard? card;
+            if (IsAisTurn(context.GameState.ActivePlayer))
             {
-                PrintInvalidOption();
-                continue;
+                card = Logic.DeclareAttack(context.Player.Hand, context.Player.CurrentEnergy);
             }
+            else
+            {
+                Console.WriteLine("Choose a card to attack with (0 to pass)");
+                string? input = Console.ReadLine();
+                if (
+                    !int.TryParse(input, out int index)
+                    || index < 0
+                    || index > context.Player.Hand.Count
+                )
+                {
+                    PrintInvalidOption();
+                    continue;
+                }
 
-            var card = index == 0 ? null : context.Player.Hand[index - 1];
+                card = index == 0 ? null : context.Player.Hand[index - 1];
+            }
             if (card == null)
             {
                 PrintColored(
@@ -290,37 +297,47 @@ public class Program
         var op = context.Op;
         var opponent = context.Opponent;
         var card = context.GameState.GetPendingAttackCard()!;
+
         PrintColored(
             $"\n{GetPlayerName(context.Ap)} attacks with {FormatCard(card)}",
             GetPlayerColor(context.Ap)
         );
         Console.WriteLine($"{GetPlayerName(op)} chance to defend!\n");
-
         Pause();
         PrintStatus(context.Ap, op, context.Player, opponent);
-        PrintColored($"{GetPlayerName(op)}'s hand", GetPlayerColor(op));
-        PrintHand(opponent.Hand, GetPlayerColor(op));
 
         while (true)
         {
-            Console.WriteLine("Choose a card to defend with (0 to Pass):");
-            var input = Console.ReadLine();
-
-            if (!int.TryParse(input, out int index) || index < 0 || index > opponent.Hand.Count)
+            BattleCard? opCard;
+            if (IsAisTurn(op))
             {
-                PrintInvalidOption();
-                continue;
+                opCard = Logic.DeclareDefense(opponent.Hand, opponent.CurrentEnergy, card.Attack);
+            }
+            else
+            {
+                PrintColored($"{GetPlayerName(op)}'s hand", GetPlayerColor(op));
+                PrintHand(opponent.Hand, GetPlayerColor(op));
+
+                Console.WriteLine("Choose a card to defend with (0 to Pass):");
+                var input = Console.ReadLine();
+
+                if (!int.TryParse(input, out int index) || index < 0 || index > opponent.Hand.Count)
+                {
+                    PrintInvalidOption();
+                    continue;
+                }
+
+                opCard = index == 0 ? null : opponent.Hand[index - 1];
             }
 
-            var opCard = index == 0 ? null : opponent.Hand[index - 1];
-            if (index == 0)
+            if (opCard == null)
             {
                 PrintColored($"{GetPlayerName(op)} doesn't defend", GetPlayerColor(op));
             }
             else
             {
                 PrintColored(
-                    $"{GetPlayerName(op)} defends with {FormatCard(opCard!)}",
+                    $"{GetPlayerName(op)} defends with {FormatCard(opCard)}",
                     GetPlayerColor(op)
                 );
             }
@@ -343,11 +360,17 @@ public class Program
                 );
                 Pause();
             }
-            Console.WriteLine("-------------------");
-            Console.WriteLine("-----Next turn-----");
-            Console.WriteLine("-------------------\n");
             return;
         }
+    }
+
+    private static void MaybeHandoffTo(PlayerId nextPlayerId)
+    {
+        if (s_isAi)
+        {
+            return;
+        }
+        HandoffTo(nextPlayerId);
     }
 
     private static void HandoffTo(PlayerId nextPlayerId)
@@ -359,5 +382,10 @@ public class Program
             $"Pass the device to {GetPlayerName(nextPlayerId)}. Press Enter when they're ready."
         );
         Console.ReadLine();
+    }
+
+    private static bool IsAisTurn(PlayerId id)
+    {
+        return s_isAi && id == PlayerId.PlayerB;
     }
 }
