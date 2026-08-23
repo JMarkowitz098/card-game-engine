@@ -33,6 +33,7 @@ public class GameSessionServiceTests
         // Assert
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
     }
 
     [Fact]
@@ -65,6 +66,7 @@ public class GameSessionServiceTests
         Assert.True(result);
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerB, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
     }
 
     [Fact]
@@ -83,6 +85,65 @@ public class GameSessionServiceTests
         Assert.False(result);
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+    }
+
+    [Fact]
+    public void DeclareAttack_RealCard_HandsOffToDefender()
+    {
+        // Arrange
+        var seededDeckA = new List<Engine.BattleCard>
+        {
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+        };
+        var gameSession = new GameSessionService();
+        gameSession.SetupPlayers(seededDeckA);
+        Assert.NotNull(gameSession.PlayerA);
+        var playerA = gameSession.PlayerA;
+
+        // Act
+        gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        var result = gameSession.DeclareAttack(playerA.Hand[0]);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(gameSession.Game);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
+    }
+
+    [Fact]
+    public void DeclareDefense_InvalidChoiceAfterValidAttack_StaysOnDefender()
+    {
+        // Arrange
+        var seededDeckA = new List<Engine.BattleCard>
+        {
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+            TestCards.Card(),
+        };
+        var gameSession = new GameSessionService();
+        gameSession.SetupPlayers(seededDeckA);
+        Assert.NotNull(gameSession.PlayerA);
+        var playerA = gameSession.PlayerA;
+        var invalidDefenseCard = TestCards.Card(name: "not in hand");
+
+        // Act
+        gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.DeclareAttack(playerA.Hand[0]);
+        var result = gameSession.DeclareDefense(invalidDefenseCard);
+
+        // Assert
+        Assert.False(result);
+        Assert.NotNull(gameSession.Game);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
     }
 
     [Fact]
@@ -111,6 +172,7 @@ public class GameSessionServiceTests
         Assert.True(result);
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
     }
 
     [Fact]
@@ -128,5 +190,35 @@ public class GameSessionServiceTests
         Assert.False(result);
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+    }
+
+        [Fact]
+    public void DeclareDefense_GameEnds_ReturnsTrue()
+    {
+        // Arrange
+        var seededDeckA = new List<Engine.BattleCard>
+        {
+            TestCards.Card(attack: 100),
+            TestCards.Card(attack: 100),
+            TestCards.Card(attack: 100),
+            TestCards.Card(attack: 100),
+            TestCards.Card(attack: 100),
+        };
+        var gameSession = new GameSessionService();
+        gameSession.SetupPlayers(seededDeckA);
+        Assert.NotNull(gameSession.PlayerA);
+        var playerA = gameSession.PlayerA;
+
+        // Act
+        gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.DeclareAttack(playerA.Hand[0]);
+        var result = gameSession.DeclareDefense(null);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(gameSession.Game);
+        Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
+        Assert.Null( gameSession.PendingHandOffTo);
     }
 }
