@@ -1,6 +1,6 @@
 using CardGame.Engine;
 
-namespace CardGame.Cli;
+namespace CardGame.DeckManagement;
 
 public static class StarterDeck
 {

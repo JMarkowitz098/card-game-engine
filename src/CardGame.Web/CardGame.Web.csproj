@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CardGame.Engine\CardGame.Engine.csproj" />
+    <ProjectReference Include="..\CardGame.DeckManagement\CardGame.DeckManagement.csproj" />
   </ItemGroup>
 
 </Project>
