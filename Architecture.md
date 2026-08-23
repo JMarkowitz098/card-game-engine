@@ -11,9 +11,10 @@ The core of the program that runs the game and processes logic. Intended to be f
 A simple console based UI for testing the engine and simulating games
 
 ## Web Client (in progress)
-`CardGame.Web` — Blazor WebAssembly, references `CardGame.Engine` only. Single page, hotseat (no separate routes per player); human-vs-human first, `CardGame.Ai` wiring deferred until that works end-to-end.
-- `GameSessionService` — DI-registered, holds the live `PlayerState`s/`GameState`, thin wrappers around `GameState.DeclareAttack`/`DeclareDefense`, raises a `Changed` event after any mutation for components to re-render on.
-- `PendingHandoffTo` — replaces the CLI's blocking `HandoffTo` calls; set to whichever player should see the screen next after an action, cleared by a privacy-overlay component's "I'm ready" button.
+`CardGame.Web` — Blazor WebAssembly, references `CardGame.Engine` and `CardGame.DeckManagement`. Single page, hotseat (no separate routes per player); human-vs-human first, `CardGame.Ai` wiring deferred until that works end-to-end.
+- `GameSessionService` — DI-registered, holds the live `PlayerState`s/`GameState`. `SetupPlayers`/`BeginGame`/`DeclareAttack`/`DeclareDefense` implemented and tested; still needs a method to clear `PendingHandOffTo` (the "I'm ready" action) and a `Changed` event for components to re-render on.
+- `PendingHandOffTo` (`PlayerId?`, `null` by default) — replaces the CLI's blocking `HandoffTo` calls. Set to whichever player should see the screen next: the defender after a real attack, the attacker after a resolved (non-lethal) defense, the new active player after a decline, `null` once the match ends. Only updates on success — a rejected action leaves it untouched.
+- `Mulligan` deliberately left off for now — a pure forward to `PlayerState.Mulligan()` with nothing service-specific to test — but will likely need to come back once `Changed` exists, so a UI-triggered mulligan can notify subscribers.
 
 ## Confirmed rule interpretations
 
@@ -55,14 +56,15 @@ src/
     Players/                PlayerState.cs
   CardGame.Ai/              — simple AI opponent; references CardGame.Engine only
     Logic.cs                DeclareAttack/DeclareDefense card-selection
+  CardGame.DeckManagement/  — deck/catalog concerns shared by every client; references CardGame.Engine only
+    StarterDeck.cs          — card templates + deck-expansion; one themed set of 14 templates so far
   CardGame.Cli/             — playable console harness
     Program.cs
     TurnContext.cs
-    StarterDeck.cs          — card templates + deck-expansion; one themed set of 14 templates so far
-  CardGame.Web/             — Blazor WebAssembly front end; references CardGame.Engine only
+  CardGame.Web/             — Blazor WebAssembly front end; references CardGame.Engine + CardGame.DeckManagement
     Pages/                  Home.razor; Counter.razor/Weather.razor/NotFound.razor are unremoved template placeholders
     Layout/                 MainLayout.razor, NavMenu.razor
-    Services/               GameSessionService.cs (stub, not yet implemented)
+    Services/               GameSessionService.cs
 tests/
   CardGame.Engine.Tests/    — xUnit, references CardGame.Engine
     CombatResolverTests.cs
@@ -73,7 +75,7 @@ tests/
   CardGame.Ai.Tests/        — xUnit, references CardGame.Ai + CardGame.Engine.Tests (reuses TestCards)
     LogicTests.cs
   CardGame.Web.Tests/       — xUnit, references CardGame.Web + CardGame.Engine.Tests (reuses TestCards)
-    GameSessionServiceTests.cs (placeholder test, not yet written)
+    GameSessionServiceTests.cs
 ```
 
 ## Roadmap
