@@ -8,9 +8,16 @@
 <h2>New Game</h2>
 
 
-<Card GameCard="_testCard" IsPlayable="true" />
+<Hand Cards="_hand" IsCardPlayable="isCardPlayable" />
 
 @code {
         private BattleCard _testCard = new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1);
+        private List<BattleCard> _hand = new List<BattleCard> {
+                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+                new("Ignition", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+                new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        };
+        public bool isCardPlayable (BattleCard card) { return true; }
 }
 
