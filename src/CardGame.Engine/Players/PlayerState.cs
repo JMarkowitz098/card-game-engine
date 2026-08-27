@@ -5,6 +5,7 @@ public class PlayerState
     public int CurrentHealth { get; private set; } = 10;
     public int MaxEnergy { get; private set; } = 1;
     public int CurrentEnergy { get; private set; } = 1;
+    public bool HasMulliganed { get; private set; }
     private readonly List<BattleCard> _hand = new();
     public IReadOnlyList<BattleCard> Hand => _hand;
     private readonly List<BattleCard> _drawPile;
@@ -72,7 +73,9 @@ public class PlayerState
         {
             bool drewCard = DrawCard();
             if (!drewCard)
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -113,8 +116,13 @@ public class PlayerState
 
     public bool Mulligan()
     {
+        if (HasMulliganed)
+        {
+            return false;
+        }
         ReturnCards(Hand.ToList());
         Shuffle();
+        HasMulliganed = true;
         return DrawCards(5);
     }
 

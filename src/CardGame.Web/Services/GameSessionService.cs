@@ -18,9 +18,29 @@ public class GameSessionService
     {
         PlayerA = new PlayerState(seededDeckA ?? StarterDeck.Create());
         PlayerB = new PlayerState(seededDeckB ?? StarterDeck.Create());
+        PendingHandOffTo = PlayerId.PlayerA;
         PlayerA.DrawCards(5);
         PlayerB.DrawCards(5);
         Changed?.Invoke();
+    }
+
+    public bool Mulligan(PlayerId id)
+    {
+        if (PlayerA == null || PlayerB == null || Game != null)
+        {
+            throw new InvalidOperationException(
+                "Cannot Mulligan before creating Players or after Game has been started"
+            );
+        }
+        var player = id == PlayerId.PlayerA ? PlayerA : PlayerB;
+        var success = player.Mulligan();
+
+        if (success)
+        {
+            PendingHandOffTo = GameState.GetOpponentId(id);
+            Changed?.Invoke();
+        }
+        return success;
     }
 
     public void BeginGame(PlayerId startingPlayerId)

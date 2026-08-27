@@ -335,4 +335,24 @@ public class PlayerStateTests
         Assert.Equal(35, _player.DrawPile.Count);
         Assert.Empty(_player.DiscardPile);
     }
+
+
+    [Fact]
+    public void Mulligan_ReturnsFalseIfPlayerHasAlreadyMulliganed()
+    {
+        // Arrange
+        _player.DrawCards(5);
+
+        // Act
+        _player.Mulligan();
+        var mulliganHand = _player.Hand.ToList();
+        var result = _player.Mulligan();
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(5, _player.Hand.Count);
+        Assert.Equal(mulliganHand, _player.Hand);
+        Assert.Equal(35, _player.DrawPile.Count);
+        Assert.Empty(_player.DiscardPile);
+    }
 }
