@@ -12,9 +12,10 @@ A simple console based UI for testing the engine and simulating games
 
 ## Web Client (in progress)
 `CardGame.Web` — Blazor WebAssembly, references `CardGame.Engine` and `CardGame.DeckManagement`. Single page, hotseat (no separate routes per player); human-vs-human first, `CardGame.Ai` wiring deferred until that works end-to-end.
-- `GameSessionService` — DI-registered, holds the live `PlayerState`s/`GameState`. `SetupPlayers`/`BeginGame`/`DeclareAttack`/`DeclareDefense` implemented and tested; still needs a method to clear `PendingHandOffTo` (the "I'm ready" action) and a `Changed` event for components to re-render on.
-- `PendingHandOffTo` (`PlayerId?`, `null` by default) — replaces the CLI's blocking `HandoffTo` calls. Set to whichever player should see the screen next: the defender after a real attack, the attacker after a resolved (non-lethal) defense, the new active player after a decline, `null` once the match ends. Only updates on success — a rejected action leaves it untouched.
-- `Mulligan` deliberately left off for now — a pure forward to `PlayerState.Mulligan()` with nothing service-specific to test — but will likely need to come back once `Changed` exists, so a UI-triggered mulligan can notify subscribers.
+- `GameSessionService` — DI-registered, holds the live `PlayerState`s/`GameState`. `SetupPlayers`/`BeginGame`/`DeclareAttack`/`DeclareDefense`/`ConfirmReady` implemented and tested, each raising `Changed` on success. `Mulligan` designed but not yet implemented (see below).
+- `PendingHandOffTo` (`PlayerId?`, `null` by default) — replaces the CLI's blocking `HandoffTo` calls. Set to whichever player should see the screen next: the defender after a real attack, the attacker after a resolved (non-lethal) defense, the new active player after a decline, `null` once the match ends or via `ConfirmReady` (the "I'm ready" action). Only updates on success — a rejected action leaves it untouched.
+- `event Action? Changed;` — raised at the end of every mutating method (`SetupPlayers` unconditionally; `BeginGame`/`ConfirmReady` past their guard; `DeclareAttack`/`DeclareDefense` only inside the success branch) so components know to re-render.
+- `Mulligan(PlayerId id)` planned shape: throws if players aren't set up yet or if `Game` already exists (mulligan window's closed); "no second mulligan" enforcement lives on `PlayerState` itself (a `HasMulliganed` flag folded into `Mulligan()`'s existing bool return), not the service; on success sets `PendingHandOffTo = GameState.GetOpponentId(id)`. `SetupPlayers` will also need to set `PendingHandOffTo = PlayerId.PlayerA` at the end, since nothing currently tracks the handoff during the pregame mulligan phase. Not yet implemented.
 
 ## Confirmed rule interpretations
 
