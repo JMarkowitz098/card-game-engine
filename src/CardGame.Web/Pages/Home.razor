@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using CardGame.Engine
 
 <PageTitle>Home</PageTitle>
 
@@ -6,15 +7,10 @@
 
 <h2>New Game</h2>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Vs Human</button>
-<button class="btn btn-primary" @onclick="IncrementCount">Vs Computer</button>
+
+<Card GameCard="_testCard" IsPlayable="true" />
 
 @code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
+        private BattleCard _testCard = new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1);
 }
 

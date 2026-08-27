@@ -1,0 +1,22 @@
+@using CardGame.Engine
+
+<div @onclick="() => OnClick.InvokeAsync(GameCard)">
+    <div>
+        <h2>@GameCard.Name</h2>
+        <h2>Cost: @GameCard.Cost</h2>
+        <h2>Charge: @GameCard.Charge</h2>
+        <h2>Attack: @GameCard.Attack</h2>
+        <h2>Defense: @GameCard.Defense</h2>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Engine.BattleCard GameCard { get; set; }
+
+    [Parameter]
+    public bool IsPlayable { get; set; }
+
+    [Parameter]
+    public EventCallback<Engine.BattleCard> OnClick { get; set; }
+}
