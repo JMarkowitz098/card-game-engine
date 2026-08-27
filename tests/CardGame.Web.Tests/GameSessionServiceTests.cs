@@ -9,6 +9,8 @@ public class GameSessionServiceTests
     {
         // Arrange
         var gameSession = new GameSessionService();
+        var changedRaised = false;
+        gameSession.Changed += () => changedRaised = true;
 
         // Act
         gameSession.SetupPlayers();
@@ -18,6 +20,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.PlayerB);
         Assert.Equal(5, gameSession.PlayerA.Hand.Count);
         Assert.Equal(5, gameSession.PlayerB.Hand.Count);
+        Assert.True(changedRaised);
     }
 
     [Fact]
@@ -26,6 +29,8 @@ public class GameSessionServiceTests
         // Arrange
         var gameSession = new GameSessionService();
         gameSession.SetupPlayers();
+        var changedRaised = false;
+        gameSession.Changed += () => changedRaised = true;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
@@ -34,6 +39,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
     }
 
     [Fact]
@@ -41,6 +47,8 @@ public class GameSessionServiceTests
     {
         // Arrange
         var gameSession = new GameSessionService();
+        var changedRaised = false;
+        gameSession.Changed += () => changedRaised = true;
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -49,6 +57,7 @@ public class GameSessionServiceTests
 
         // Assert
         Assert.Equal("Cannot begin the game before both players have been set up.", ex.Message);
+        Assert.False(changedRaised);
     }
 
     [Fact]
@@ -57,9 +66,11 @@ public class GameSessionServiceTests
         // Arrange
         var gameSession = new GameSessionService();
         gameSession.SetupPlayers();
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareAttack(null);
 
         // Assert
@@ -67,6 +78,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerB, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
     }
 
     [Fact]
@@ -76,9 +88,11 @@ public class GameSessionServiceTests
         var gameSession = new GameSessionService();
         gameSession.SetupPlayers();
         var invalidCard = TestCards.Card();
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareAttack(invalidCard);
 
         // Assert
@@ -86,6 +100,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+        Assert.False(changedRaised);
     }
 
     [Fact]
@@ -104,9 +119,11 @@ public class GameSessionServiceTests
         gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareAttack(playerA.Hand[0]);
 
         // Assert
@@ -114,6 +131,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
     }
 
     [Fact]
@@ -133,10 +151,12 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
         var invalidDefenseCard = TestCards.Card(name: "not in hand");
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
         gameSession.DeclareAttack(playerA.Hand[0]);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareDefense(invalidDefenseCard);
 
         // Assert
@@ -144,6 +164,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerB, gameSession.PendingHandOffTo);
+        Assert.False(changedRaised);
     }
 
     [Fact]
@@ -162,10 +183,12 @@ public class GameSessionServiceTests
         gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
         gameSession.DeclareAttack(playerA.Hand[0]);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareDefense(null);
 
         // Assert
@@ -173,6 +196,7 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
     }
 
     [Fact]
@@ -181,9 +205,11 @@ public class GameSessionServiceTests
         // Arrange
         var gameSession = new GameSessionService();
         gameSession.SetupPlayers();
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareDefense(null); // Can't defend before an attack
 
         // Assert
@@ -191,9 +217,10 @@ public class GameSessionServiceTests
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.PendingHandOffTo);
+        Assert.False(changedRaised);
     }
 
-        [Fact]
+    [Fact]
     public void DeclareDefense_GameEnds_ReturnsTrue()
     {
         // Arrange
@@ -209,16 +236,40 @@ public class GameSessionServiceTests
         gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
+        var changedRaised = false;
 
         // Act
         gameSession.BeginGame(Engine.PlayerId.PlayerA);
         gameSession.DeclareAttack(playerA.Hand[0]);
+        gameSession.Changed += () => changedRaised = true;
         var result = gameSession.DeclareDefense(null);
 
         // Assert
         Assert.True(result);
         Assert.NotNull(gameSession.Game);
         Assert.Equal(Engine.PlayerId.PlayerA, gameSession.Game.ActivePlayer);
-        Assert.Null( gameSession.PendingHandOffTo);
+        Assert.Null(gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
+    }
+
+    [Fact]
+    public void ConfirmReady_SetsPendingHandOffToNull()
+    {
+        // Arrange
+        var gameSession = new GameSessionService();
+        gameSession.SetupPlayers();
+        var changedRaised = false;
+
+        // Act
+        gameSession.BeginGame(Engine.PlayerId.PlayerA);
+        gameSession.DeclareAttack(null);
+        var before = gameSession.PendingHandOffTo;
+        gameSession.Changed += () => changedRaised = true;
+        gameSession.ConfirmReady();
+
+        // Assert
+        Assert.NotNull(before);
+        Assert.Null(gameSession.PendingHandOffTo);
+        Assert.True(changedRaised);
     }
 }

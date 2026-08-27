@@ -9,6 +9,7 @@ public class GameSessionService
     public PlayerState? PlayerB { get; private set; }
     public PlayerId? PendingHandOffTo { get; private set; }
     public GameState? Game { get; private set; }
+    public event Action? Changed;
 
     public void SetupPlayers(
         List<BattleCard>? seededDeckA = null,
@@ -19,6 +20,7 @@ public class GameSessionService
         PlayerB = new PlayerState(seededDeckB ?? StarterDeck.Create());
         PlayerA.DrawCards(5);
         PlayerB.DrawCards(5);
+        Changed?.Invoke();
     }
 
     public void BeginGame(PlayerId startingPlayerId)
@@ -32,6 +34,7 @@ public class GameSessionService
 
         PendingHandOffTo = startingPlayerId;
         Game = MatchSetup.StartGame(PlayerA, PlayerB, startingPlayerId);
+        Changed?.Invoke();
     }
 
     public bool DeclareAttack(BattleCard? card)
@@ -46,6 +49,7 @@ public class GameSessionService
         {
             PendingHandOffTo =
                 card == null ? Game.ActivePlayer : GameState.GetOpponentId(Game.ActivePlayer);
+            Changed?.Invoke();
         }
         return intentResult.Success;
     }
@@ -61,6 +65,7 @@ public class GameSessionService
         if (intentResult.Success)
         {
             PendingHandOffTo = IsGameOver(defendingPlayerId) ? null : Game.ActivePlayer;
+            Changed?.Invoke();
         }
         return intentResult.Success;
     }
@@ -68,5 +73,11 @@ public class GameSessionService
     private bool IsGameOver(PlayerId id)
     {
         return Game?.GetPlayer(id).CurrentHealth == 0;
+    }
+
+    public void ConfirmReady()
+    {
+        PendingHandOffTo = null;
+        Changed?.Invoke();
     }
 }
