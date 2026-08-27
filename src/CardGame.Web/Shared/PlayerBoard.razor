@@ -9,10 +9,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required Engine.PlayerState Stats { get; set; }
+    public required PlayerState Stats { get; set; }
 
     [Parameter, EditorRequired]
-    public List<Engine.BattleCard> Hand { get; set; }
+    public required List<BattleCard> Hand { get; set; }
 
     public bool IsCardPlayable(BattleCard card) { return true; }
 }

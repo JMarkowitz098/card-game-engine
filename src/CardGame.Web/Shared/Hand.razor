@@ -6,9 +6,9 @@
         @foreach (var card in Cards)
         {
             <Card 
-                GameCard="card" 
-                IsPlayable="IsCardPlayable(card)" 
-                OnClick="OnCardClicked" 
+                GameCard="@card" 
+                IsPlayable="@IsCardPlayable(card)" 
+                OnClick="@OnCardClicked" 
             />
         }
     </div>
@@ -16,11 +16,11 @@
 
 @code {
     [Parameter, EditorRequired]
-    public List<Engine.BattleCard> Cards { get; set; }
+    public required List<BattleCard> Cards { get; set; }
 
     [Parameter]
-    public EventCallback<Engine.BattleCard> OnCardClicked { get; set; }
+    public EventCallback<BattleCard> OnCardClicked { get; set; }
 
-    [Parameter]
-    public required Func<Engine.BattleCard, bool> IsCardPlayable { get; set; }
+    [Parameter, EditorRequired]
+    public required Func<BattleCard, bool> IsCardPlayable { get; set; }
 }

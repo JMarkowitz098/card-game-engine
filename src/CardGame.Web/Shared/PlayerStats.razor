@@ -8,7 +8,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public Engine.PlayerState Stats { get; set; }
+    public required PlayerState Stats { get; set; }
 
     private const int MaxHealth = 10;
 }
