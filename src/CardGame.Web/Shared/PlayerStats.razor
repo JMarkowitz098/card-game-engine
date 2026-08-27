@@ -1,0 +1,13 @@
+@using CardGame.Engine
+
+<div>
+    <span>Health: @Stats.CurrentHealth/@MaxHealth</span>
+    <span>Energy: @Stats.CurrentEnergy/@Stats.MaxEnergy</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Engine.PlayerState Stats { get; set; }
+
+    private const int MaxHealth = 10;
+}

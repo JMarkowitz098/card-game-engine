@@ -3,12 +3,13 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Card Game</h1>
+@* <h1>Card Game</h1>
 
-<h2>New Game</h2>
+<h2>New Game</h2> *@
 
 
-<Hand Cards="_hand" IsCardPlayable="isCardPlayable" />
+<PlayerStats Stats="_stats" />
+@* <Hand Cards="_hand" IsCardPlayable="isCardPlayable" /> *@
 
 @code {
         private BattleCard _testCard = new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1);
@@ -18,6 +19,10 @@
                 new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
                 new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
         };
-        public bool isCardPlayable (BattleCard card) { return true; }
+        public bool isCardPlayable(BattleCard card) { return true; }
+        private PlayerState _stats = new PlayerState(new List<BattleCard> {
+                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+
+});
 }
 

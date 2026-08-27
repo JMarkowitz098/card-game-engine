@@ -19,5 +19,5 @@
     public EventCallback<Engine.BattleCard> OnCardClicked { get; set; }
 
     [Parameter]
-    public Func<Engine.BattleCard, bool> IsCardPlayable { get; set; }
+    public required Func<Engine.BattleCard, bool> IsCardPlayable { get; set; }
 }
