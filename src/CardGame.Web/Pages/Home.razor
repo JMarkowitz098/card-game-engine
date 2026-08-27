@@ -7,8 +7,13 @@
 
 <h2>New Game</h2> *@
 
+<PlayerBoard Stats="_stats" Hand="_hand" />
 
-<PlayerStats Stats="_stats" />
+
+@* <Pile Name="Draw Pile" NumCards="_stats.DrawPile.Count" />
+<Pile Name="Discard Pile" NumCards="_stats.DiscardPile.Count" /> *@
+
+@* <PlayerStats Stats="_stats" /> *@
 @* <Hand Cards="_hand" IsCardPlayable="isCardPlayable" /> *@
 
 @code {
@@ -22,7 +27,6 @@
         public bool isCardPlayable(BattleCard card) { return true; }
         private PlayerState _stats = new PlayerState(new List<BattleCard> {
                 new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-
-});
+        });
 }
 

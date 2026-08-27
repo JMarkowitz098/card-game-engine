@@ -1,14 +1,17 @@
 @using CardGame.Engine
 
-<div style="display: flex;">
-    @foreach (var card in Cards)
-    {
-        <Card 
-            GameCard="card" 
-            IsPlayable="IsCardPlayable(card)" 
-            OnClick="OnCardClicked" 
-        />
-    }
+<div>
+    <h3>Hand</h3>
+    <div style="display: flex;">
+        @foreach (var card in Cards)
+        {
+            <Card 
+                GameCard="card" 
+                IsPlayable="IsCardPlayable(card)" 
+                OnClick="OnCardClicked" 
+            />
+        }
+    </div>
 </div>
 
 @code {
