@@ -17,6 +17,15 @@ A simple console based UI for testing the engine and simulating games
 - `event Action? Changed;` — raised at the end of every mutating method (`SetupPlayers` unconditionally; `BeginGame`/`ConfirmReady` past their guard; `Mulligan`/`DeclareAttack`/`DeclareDefense` only inside the success branch) so components know to re-render.
 - `Mulligan(PlayerId id)` — throws if players aren't set up yet or if `Game` already exists (mulligan window's closed). "No second mulligan" enforcement lives on `PlayerState` itself (`HasMulliganed` flag, folded into `Mulligan()`'s existing bool return), not the service. On success sets `PendingHandOffTo = GameState.GetOpponentId(id)`.
 
+**Components** (`Shared/`), all presentational — no rules logic, no direct reference to `GameSessionService`:
+- `Card.razor` — one `BattleCard`'s stats. `GameCard` (required), `IsPlayable` (styling hook, not yet wired to any visual difference), `OnClick` (`EventCallback<BattleCard>`, optional).
+- `Hand.razor` — loops a card list through `Card`, forwarding `OnCardClicked` and calling `IsCardPlayable(card)` per card to compute each `Card`'s `IsPlayable`.
+- `PlayerStats.razor` — health/energy readout from a `PlayerState`.
+- `Pile.razor` — a card-back count (`Name`, `NumCards`); one component reused for both draw and discard piles rather than separate `DrawPile`/`DiscardPile` files.
+- `PlayerBoard.razor` — composes `PlayerStats` + `Hand` + two `Pile`s behind one `Stats`/`Hand` parameter pair; meant to be instantiated once per player.
+
+**Conventions:** every required parameter gets both `[EditorRequired]` (Razor-level warning if the call site omits it) and C#'s `required` modifier (satisfies nullable analysis — `EditorRequired` alone does not); no `Engine.`-qualified types when `@using CardGame.Engine` is already in scope; `@` prefix on every parameter-binding attribute value, including bare variables, but not plain string literals; a component's own file name can never also be a member name inside it (`CS0542` — e.g. `Card.razor` can't have a `Card` parameter, must be `GameCard`); `<h3>` for a component's own section title, `<p>`/`<span>` for data.
+
 ## Confirmed rule interpretations
 
 - **Energy replenish:** at the start of *every* turn, **both** players' energy refills to their own current max — not just the active player's.
@@ -65,6 +74,7 @@ src/
   CardGame.Web/             — Blazor WebAssembly front end; references CardGame.Engine + CardGame.DeckManagement
     Pages/                  Home.razor; Counter.razor/Weather.razor/NotFound.razor are unremoved template placeholders
     Layout/                 MainLayout.razor, NavMenu.razor
+    Shared/                 Card.razor, Hand.razor, PlayerStats.razor, Pile.razor, PlayerBoard.razor
     Services/               GameSessionService.cs
 tests/
   CardGame.Engine.Tests/    — xUnit, references CardGame.Engine
