@@ -1,10 +1,8 @@
 @using CardGame.Engine
 
-<div>
-    <PlayerStats Stats="@Stats" />
+<div style="border-style: solid">
+    <PlayerBoardInformation Stats=@Stats PlayerName="@PlayerName" />
     <Hand Cards="@Hand" IsCardPlayable="@IsCardPlayable" />
-    <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
-    <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
 </div>
 
 @code {
@@ -13,6 +11,9 @@
 
     [Parameter, EditorRequired]
     public required List<BattleCard> Hand { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string PlayerName { get; set; }
 
     public bool IsCardPlayable(BattleCard card) { return true; }
 }

@@ -1,18 +1,19 @@
 @using CardGame.Engine
 
-<div>
+<section>
     <h3>Hand</h3>
-    <div style="display: flex;">
+    <ul style="display: flex; justify-content: space-evenly;">
         @foreach (var card in Cards)
         {
-            <Card 
+            <li><Card 
                 GameCard="@card" 
                 IsPlayable="@IsCardPlayable(card)" 
                 OnClick="@OnCardClicked" 
             />
+            </li>
         }
-    </div>
-</div>
+    </ul>
+</section>
 
 @code {
     [Parameter, EditorRequired]

@@ -1,0 +1,18 @@
+@using CardGame.Engine
+
+<section>
+    <h2 style="text-align: center;">@PlayerName</h2>
+    <div style=" display: flex; justify-content: space-evenly;">
+        <PlayerStats Stats="@Stats" />
+        <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
+        <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PlayerState Stats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string PlayerName { get; set; }
+}

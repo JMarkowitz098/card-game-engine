@@ -3,18 +3,11 @@
 
 <PageTitle>Home</PageTitle>
 
-@* <h1>Card Game</h1>
+<main>
+        <PlayerBoardInformation Stats="@_opponent_stats" PlayerName="Opponent" />
+        <PlayerBoard Stats="_stats" Hand="_hand" PlayerName="Jared" />
+</main>
 
-<h2>New Game</h2> *@
-
-<PlayerBoard Stats="_stats" Hand="_hand" />
-
-
-@* <Pile Name="Draw Pile" NumCards="_stats.DrawPile.Count" />
-<Pile Name="Discard Pile" NumCards="_stats.DiscardPile.Count" /> *@
-
-@* <PlayerStats Stats="_stats" /> *@
-@* <Hand Cards="_hand" IsCardPlayable="isCardPlayable" /> *@
 
 @code {
         private BattleCard _testCard = new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1);
@@ -27,6 +20,10 @@
         public bool isCardPlayable(BattleCard card) { return true; }
         private PlayerState _stats = new PlayerState(new List<BattleCard> {
                 new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        });
+        private PlayerState _opponent_stats = new PlayerState(new List<BattleCard> {
+                new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+                new("Red", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
         });
 }
 

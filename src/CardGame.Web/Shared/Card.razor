@@ -1,7 +1,7 @@
 @using CardGame.Engine
 
 <div @onclick="() => OnClick.InvokeAsync(GameCard)">
-    <div>
+    <div style="border-style: solid;">
         <p>@GameCard.Name</p>
         <p>Cost: @GameCard.Cost</p>
         <p>Charge: @GameCard.Charge</p>
