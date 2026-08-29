@@ -1,9 +1,9 @@
 @using CardGame.Engine
 
-<div style="border-style: solid">
-    <PlayerBoardInformation Stats=@Stats PlayerName="@PlayerName" />
+<section style="border-style: solid">
+    <PlayerBoardInformation Stats="@Stats" PlayerName="@PlayerName" />
     <Hand Cards="@Hand" IsCardPlayable="@IsCardPlayable" />
-</div>
+</section>
 
 @code {
     [Parameter, EditorRequired]
