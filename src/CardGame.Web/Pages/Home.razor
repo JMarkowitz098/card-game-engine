@@ -34,6 +34,9 @@
                                 <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
                                              PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
                                 break;
+                        case Phase.GameOver:
+                                <VictoryScreen WinnerName="@GetWinnerName()"></VictoryScreen>
+                                break;
                 }
         }
 </main>

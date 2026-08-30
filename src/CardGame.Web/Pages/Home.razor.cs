@@ -10,6 +10,7 @@ public partial class Home : IDisposable
         Setup,
         Play,
         Mulligan,
+        GameOver,
     };
 
     private Phase _currentPhase = Phase.Title;
@@ -46,6 +47,10 @@ public partial class Home : IDisposable
             if (!result)
             {
                 Console.WriteLine("Can't use that card");
+            }
+            else if (Game.Game!.Phase == TurnPhase.MatchEnded)
+            {
+                _currentPhase = Phase.GameOver;
             }
         }
     }
@@ -137,5 +142,12 @@ public partial class Home : IDisposable
     private BattleCard? GetAttackingCard()
     {
         return Game.Game!.GetPendingAttackCard();
+    }
+
+    private string GetWinnerName()
+    {
+        return Game.Game!.PlayerA.CurrentHealth == 0
+            ? GetPlayerName(PlayerId.PlayerB)
+            : GetPlayerName(PlayerId.PlayerA);
     }
 }
