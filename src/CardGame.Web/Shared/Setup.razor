@@ -1,0 +1,29 @@
+<section>
+    <form @onsubmit="@HandleSubmit" @onsubmit:preventDefault>
+        <fieldset>
+            <legend>Player A</legend>
+            <label for="playerA">Name:</label>
+            <input id="playerA" @bind="@_playerAName" />
+        </fieldset>
+        <fieldset>
+            <legend>Player B</legend>
+            <label for="playerB">Name:</label>
+            <input id="playerB" @bind="@_playerBName" />
+        </fieldset>
+        <button>Submit</button>
+    </form>
+</section>
+
+@code {
+    private string _playerAName = "PlayerA";
+    private string _playerBName = "PlayerB";
+
+    [Parameter, EditorRequired]
+    public EventCallback OnSubmit { get; set; }
+
+    private async Task HandleSubmit()
+    {
+        Console.WriteLine($"Hello {_playerAName} and {_playerBName}");
+        await OnSubmit.InvokeAsync();
+    }
+}

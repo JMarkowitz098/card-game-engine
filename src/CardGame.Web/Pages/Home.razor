@@ -4,13 +4,38 @@
 <PageTitle>Home</PageTitle>
 
 <main>
-        <PlayerBoardInformation Stats="@_opponent_stats" PlayerName="Opponent" />
-        <PlayerBoard Stats="@_stats" Hand="@_hand" PlayerName="Jared" />
+        @switch (_currentPhase)
+        {
+                case Phase.Title:
+                        <button @onclick="OnClickStart">Start Game</button>
+                        break;
+                case Phase.Setup:
+                        <Setup OnSubmit="@OnSetupSubmitted" />
+                        break;
+                case Phase.Play:
+                        <PlayerBoardInformation Stats="@_opponent_stats" PlayerName="Opponent" />
+                        <PlayerBoard Stats="@_stats" Hand="@_hand" OnCardClicked="@OnCardClicked" PlayerName="Jared" />
+                        break;
+        }
 </main>
 
 
 @code {
-        private BattleCard _testCard = new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1);
+        private enum Phase { Title, Setup, Play };
+        private Phase _currentPhase = Phase.Title;
+        public void OnCardClicked(BattleCard Card)
+        {
+                Console.WriteLine("Clicked " + Card.Name);
+        }
+        public void OnClickStart()
+        {
+                _currentPhase = Phase.Setup;
+        }
+        private void OnSetupSubmitted()
+        {
+                _currentPhase = Phase.Play;
+        }
+
         private List<BattleCard> _hand = new List<BattleCard> {
                 new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
                 new("Ignition", Cost: 1, Charge: 1, Attack: 2, Defense: 1),

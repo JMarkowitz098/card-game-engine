@@ -2,7 +2,7 @@
 
 <section style="border-style: solid">
     <PlayerBoardInformation Stats="@Stats" PlayerName="@PlayerName" />
-    <Hand Cards="@Hand" IsCardPlayable="@IsCardPlayable" />
+    <Hand Cards="@Hand" OnCardClicked="@OnCardClicked" IsCardPlayable="@IsCardPlayable" />
 </section>
 
 @code {
@@ -14,6 +14,9 @@
 
     [Parameter, EditorRequired]
     public required string PlayerName { get; set; }
+
+    [Parameter]
+    public EventCallback<BattleCard> OnCardClicked { get; set; }
 
     public bool IsCardPlayable(BattleCard card) { return true; }
 }
