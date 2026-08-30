@@ -20,7 +20,7 @@
                 @switch (_currentPhase)
                 {
                         case Phase.Title:
-                                <Hand Cards="@_previewHand" IsCardPlayable="@(_ => true)" />
+                                <PlayerBoard Stats="@_previewStats" Hand="@_previewHand" PlayerName="Preview" IsAttacking="true" />
                                 break;
                         case Phase.Setup:
                                 <Setup OnSubmit="@OnSetupSubmitted" />

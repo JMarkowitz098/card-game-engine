@@ -27,6 +27,12 @@ public partial class Home : IDisposable
         new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
         new("Lightning", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
     };
+    private readonly PlayerState _previewStats;
+
+    public Home()
+    {
+        _previewStats = new PlayerState(_previewHand);
+    }
 
     protected override void OnInitialized()
     {
