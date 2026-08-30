@@ -10,7 +10,7 @@
     public required PlayerState Stats { get; set; }
 
     [Parameter, EditorRequired]
-    public required List<BattleCard> Hand { get; set; }
+    public required IReadOnlyList<BattleCard> Hand { get; set; }
 
     [Parameter, EditorRequired]
     public required string PlayerName { get; set; }

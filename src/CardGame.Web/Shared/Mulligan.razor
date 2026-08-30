@@ -1,0 +1,16 @@
+@using CardGame.Engine
+<section>
+    <h3>Do you want to mulligan?</h3>
+    <button @onclick="() => OnSubmit.InvokeAsync(true)">Yes</button>
+    <button @onclick="() => OnSubmit.InvokeAsync(false)">No</button>
+</section>
+<Hand Cards="@PlayerHand" IsCardPlayable="@IsCardPlayable"></Hand>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<BattleCard> PlayerHand { get; set; }
+    public bool IsCardPlayable(BattleCard card) { return true; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<bool> OnSubmit { get; set; }
+}

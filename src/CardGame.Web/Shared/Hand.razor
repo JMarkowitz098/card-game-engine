@@ -17,7 +17,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required List<BattleCard> Cards { get; set; }
+    public required IReadOnlyList<BattleCard> Cards { get; set; }
 
     [Parameter]
     public EventCallback<BattleCard> OnCardClicked { get; set; }

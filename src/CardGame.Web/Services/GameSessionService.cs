@@ -24,7 +24,7 @@ public class GameSessionService
         Changed?.Invoke();
     }
 
-    public bool Mulligan(PlayerId id)
+    public bool Mulligan(PlayerId id, bool willMulligan)
     {
         if (PlayerA == null || PlayerB == null || Game != null)
         {
@@ -33,7 +33,7 @@ public class GameSessionService
             );
         }
         var player = id == PlayerId.PlayerA ? PlayerA : PlayerB;
-        var success = player.Mulligan();
+        var success = !willMulligan || player.Mulligan();
 
         if (success)
         {

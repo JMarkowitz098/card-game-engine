@@ -37,7 +37,7 @@ public class GameSessionServiceTests
 
         // Act
         gameSession.Changed += () => changedRaised = true;
-        gameSession.Mulligan(PlayerId.PlayerA);
+        gameSession.Mulligan(PlayerId.PlayerA, willMulligan: true);
 
         // Assert
         Assert.Equal(PlayerId.PlayerB, gameSession.PendingHandOffTo);
@@ -56,7 +56,7 @@ public class GameSessionServiceTests
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            gameSession.Mulligan(PlayerId.PlayerA)
+            gameSession.Mulligan(PlayerId.PlayerA, willMulligan: true)
         );
 
         // Assert
@@ -79,7 +79,7 @@ public class GameSessionServiceTests
 
         // Act
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            gameSession.Mulligan(PlayerId.PlayerA)
+            gameSession.Mulligan(PlayerId.PlayerA, willMulligan: true)
         );
 
         // Assert

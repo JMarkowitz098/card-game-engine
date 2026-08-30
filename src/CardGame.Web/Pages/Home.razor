@@ -1,28 +1,62 @@
 ﻿@page "/"
 @using CardGame.Engine
+@inject GameSessionService Game
+@implements IDisposable
 
 <PageTitle>Home</PageTitle>
 
 <main>
-        @switch (_currentPhase)
+        @if (_showingPostMulliganHand)
         {
-                case Phase.Title:
-                        <button @onclick="OnClickStart">Start Game</button>
-                        break;
-                case Phase.Setup:
-                        <Setup OnSubmit="@OnSetupSubmitted" />
-                        break;
-                case Phase.Play:
-                        <PlayerBoardInformation Stats="@_opponent_stats" PlayerName="Opponent" />
-                        <PlayerBoard Stats="@_stats" Hand="@_hand" OnCardClicked="@OnCardClicked" PlayerName="Jared" />
-                        break;
+                <p>Your hand:</p>
+                <Hand Cards="@(GetActivePlayer().Hand)" IsCardPlayable="@(_ => false)" />
+                <button @onclick="@OnPostMulliganContinue">Continue</button>
+        }
+        else if (Game.PendingHandOffTo != null)
+        {
+                <p>Pass the device to @Game.PendingHandOffTo</p>
+                <button @onclick="@OnReadyClicked">Ready</button>
+
+        }
+        else
+        {
+                @switch (_currentPhase)
+                {
+                        case Phase.Title:
+                                <button @onclick="OnClickStart">Start Game</button>
+                                break;
+                        case Phase.Setup:
+                                <Setup OnSubmit="@OnSetupSubmitted" />
+                                break;
+                        case Phase.Mulligan:
+                                <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
+                                break;
+                        case Phase.Play:
+                                <PlayerBoardInformation Stats="@(Game.PlayerB!)" PlayerName="Opponent" />
+                                <PlayerBoard Stats="@(Game.PlayerA!)" Hand="@(Game.PlayerA!.Hand)" OnCardClicked="@OnCardClicked"
+                                             PlayerName="Jared" />
+                                break;
+                }
         }
 </main>
 
 
 @code {
-        private enum Phase { Title, Setup, Play };
+        private enum Phase { Title, Setup, Play, Mulligan };
         private Phase _currentPhase = Phase.Title;
+        private PlayerId? _activePlayerId;
+        private HashSet<PlayerId> _mulliganDecided = new();
+        private bool _showingPostMulliganHand;
+
+        protected override void OnInitialized()
+        {
+                Game.Changed += StateHasChanged;
+        }
+
+        public void Dispose()
+        {
+                Game.Changed -= StateHasChanged;
+        }
         public void OnCardClicked(BattleCard Card)
         {
                 Console.WriteLine("Clicked " + Card.Name);
@@ -33,22 +67,35 @@
         }
         private void OnSetupSubmitted()
         {
-                _currentPhase = Phase.Play;
+                Game.SetupPlayers();
+                _currentPhase = Phase.Mulligan;
+        }
+        public void OnMulliganChoiceClick(bool willMulligan)
+        {
+                if (_activePlayerId == null) return;
+
+                Game.Mulligan(_activePlayerId.Value, willMulligan);
+                _mulliganDecided.Add(_activePlayerId.Value);
+                _showingPostMulliganHand = willMulligan;
+        }
+        private void OnPostMulliganContinue()
+        {
+                _showingPostMulliganHand = false;
+                if (_mulliganDecided.Count == 2)
+                {
+                        Game.BeginGame(PlayerId.PlayerA);
+                        _currentPhase = Phase.Play;
+                }
+        }
+        private void OnReadyClicked()
+        {
+                _activePlayerId = Game.PendingHandOffTo;
+                Game.ConfirmReady();
+        }
+        private PlayerState GetActivePlayer()
+        {
+                return _activePlayerId == PlayerId.PlayerA ? Game.PlayerA! : Game.PlayerB!;
         }
 
-        private List<BattleCard> _hand = new List<BattleCard> {
-                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-                new("Ignition", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-                new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-        };
-        public bool isCardPlayable(BattleCard card) { return true; }
-        private PlayerState _stats = new PlayerState(new List<BattleCard> {
-                new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-        });
-        private PlayerState _opponent_stats = new PlayerState(new List<BattleCard> {
-                new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-                new("Red", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
-        });
 }
 
