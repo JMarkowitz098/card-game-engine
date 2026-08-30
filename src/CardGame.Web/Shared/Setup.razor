@@ -19,11 +19,10 @@
     private string _playerBName = "PlayerB";
 
     [Parameter, EditorRequired]
-    public EventCallback OnSubmit { get; set; }
+    public EventCallback<(string PlayerAName, string PlayerBName)> OnSubmit { get; set; }
 
     private async Task HandleSubmit()
     {
-        Console.WriteLine($"Hello {_playerAName} and {_playerBName}");
-        await OnSubmit.InvokeAsync();
+        await OnSubmit.InvokeAsync((_playerAName, _playerBName));
     }
 }

@@ -93,6 +93,7 @@ public class GameState
         _lastDefenseCard = intent.Card;
 
         int damage = CombatResolver.ResolveBattle(_pendingAttackCard, intent.Card);
+        _pendingAttackCard = null;
 
         defender.TakeDamage(damage);
         events.Add(new DamageDealt(intent.DefendingPlayerId, damage));

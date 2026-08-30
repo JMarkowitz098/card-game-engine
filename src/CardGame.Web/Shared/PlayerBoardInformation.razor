@@ -6,6 +6,11 @@
         <PlayerStats Stats="@Stats" />
         <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
         <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
+        @if (AttackCard != null)
+        {
+            <Card GameCard="@AttackCard"></Card>
+        }
+
     </div>
 </section>
 
@@ -15,4 +20,7 @@
 
     [Parameter, EditorRequired]
     public required string PlayerName { get; set; }
+
+    [Parameter]
+    public BattleCard? AttackCard { get; set; }
 }

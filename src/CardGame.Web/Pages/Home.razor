@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using CardGame.Engine
 @inject GameSessionService Game
 @implements IDisposable
 
@@ -12,7 +11,8 @@
         }
         else if (Game.PendingHandOffTo != null)
         {
-                <PendingHandoffTo PendingHandoffPlayer="@(Game.PendingHandOffTo!.Value)" OnReadyClicked="@OnReadyClicked" />
+                <PendingHandoffTo PendingHandoffPlayerName="@GetPlayerName(Game.PendingHandOffTo!.Value)"
+                                  OnReadyClicked="@OnReadyClicked" />
 
         }
         else
@@ -29,9 +29,10 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <PlayerBoardInformation Stats="@(Game.PlayerB!)" PlayerName="Opponent" />
-                                <PlayerBoard Stats="@(Game.PlayerA!)" Hand="@(Game.PlayerA!.Hand)" OnCardClicked="@OnCardClicked"
-                                             PlayerName="Jared" />
+                                <PlayerBoardInformation Stats="@GetOpponent()" PlayerName="@GetOpponentName()"
+                                                        AttackCard="@GetAttackingCard()" />
+                                <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
+                                             PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
                                 break;
                 }
         }

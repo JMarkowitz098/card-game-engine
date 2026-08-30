@@ -1,11 +1,11 @@
 @using CardGame.Engine;
 
-<p>Pass the device to @PendingHandoffPlayer</p>
+<p>Pass the device to @PendingHandoffPlayerName</p>
 <button @onclick="@OnReadyClicked">Ready</button>
 
 @code {
     [Parameter, EditorRequired]
-    public required PlayerId PendingHandoffPlayer { get; set; }
+    public required string PendingHandoffPlayerName { get; set; }
 
     [Parameter, EditorRequired]
     public EventCallback OnReadyClicked { get; set; }

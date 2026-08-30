@@ -5,13 +5,11 @@
     <ul style="display: flex; justify-content: space-evenly;">
         @foreach (var card in Cards)
         {
-            <li><Card 
-                GameCard="@card" 
-                IsPlayable="@IsCardPlayable(card)" 
-                OnClick="@OnCardClicked" 
-            />
+            <li>
+                <Card GameCard="@card" IsPlayable="@IsCardPlayable(card)" OnClick="@OnCardClicked" />
             </li>
         }
+        <li><button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button></li>
     </ul>
 </section>
 

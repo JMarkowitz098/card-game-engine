@@ -1,6 +1,7 @@
 @using CardGame.Engine
 
 <section style="border-style: solid">
+    <h2>@(IsAttacking ? "Attacking" : "Defending")</h2>
     <PlayerBoardInformation Stats="@Stats" PlayerName="@PlayerName" />
     <Hand Cards="@Hand" OnCardClicked="@OnCardClicked" IsCardPlayable="@IsCardPlayable" />
 </section>
@@ -18,5 +19,11 @@
     [Parameter]
     public EventCallback<BattleCard> OnCardClicked { get; set; }
 
-    public bool IsCardPlayable(BattleCard card) { return true; }
+    [Parameter, EditorRequired]
+    public required bool IsAttacking { get; set; }
+
+    public bool IsCardPlayable(BattleCard card)
+    {
+        return card.Cost <= Stats.CurrentEnergy;
+    }
 }

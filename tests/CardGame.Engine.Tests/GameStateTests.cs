@@ -378,6 +378,23 @@ public class GameStateTests
         Assert.True(result.Success);
     }
 
+    [Fact]
+    public void DeclareDefense_ResolvesExchange_ClearsPendingAttackCard()
+    {
+        // Arrange
+        var gameState = CreateGameState();
+        var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
+        var defenseIntent = new DeclareDefenseIntent(PlayerId.PlayerB, null);
+
+        // Act
+        gameState.DeclareAttack(attackIntent);
+        Assert.NotNull(gameState.GetPendingAttackCard());
+        gameState.DeclareDefense(defenseIntent);
+
+        // Assert
+        Assert.Null(gameState.GetPendingAttackCard());
+    }
+
     [Fact(Skip = "To be implemented")]
     public void DeclareAttack_AttemptToPlayCardThatSharesNameButIsDifferentInstance_ReturnsFalse() // Maybe throw
     { }
