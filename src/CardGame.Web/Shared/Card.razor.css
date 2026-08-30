@@ -1,0 +1,36 @@
+h3 {
+  font-size:x-large;
+  color: red;
+  margin: 0;
+}
+
+dl, dt, dd {
+  margin: 0;
+}
+
+img {
+  min-height: 8rem;
+}
+
+.card-article {
+  border: 1px solid black;
+  width: 10rem;
+  min-height: 14rem;
+  text-align: center;
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-text-element {
+  display: flex;
+  justify-content: space-around;
+}
+
+.card-button {
+  all: unset;
+  cursor: pointer;
+  display: block;
+}

@@ -20,7 +20,7 @@
                 @switch (_currentPhase)
                 {
                         case Phase.Title:
-                                <button @onclick="OnClickStart">Start Game</button>
+                                <Hand Cards="@_previewHand" IsCardPlayable="@(_ => true)" />
                                 break;
                         case Phase.Setup:
                                 <Setup OnSubmit="@OnSetupSubmitted" />

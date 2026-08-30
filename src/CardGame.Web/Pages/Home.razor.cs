@@ -19,6 +19,14 @@ public partial class Home : IDisposable
     private bool _showingPostMulliganHand;
     private string _playerAName = "";
     private string _playerBName = "";
+    private readonly List<BattleCard> _previewHand = new()
+    {
+        new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        new("Ignition", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        new("Fire", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        new("Spark", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+        new("Lightning", Cost: 1, Charge: 1, Attack: 2, Defense: 1),
+    };
 
     protected override void OnInitialized()
     {
