@@ -1,0 +1,14 @@
+@using CardGame.Engine
+<section>
+    <p>Your hand:</p>
+    <Hand Cards="@Hand" IsCardPlayable="@(_ => false)" />
+    <button @onclick="@OnContinue">Continue</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<BattleCard> Hand { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnContinue { get; set; }
+}
