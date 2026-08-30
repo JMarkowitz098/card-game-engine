@@ -1,16 +1,15 @@
 @using CardGame.Engine
 
 <section>
-    <h3>Hand</h3>
-    <ul style="display: flex; justify-content: space-evenly;">
+    <ul>
         @foreach (var card in Cards)
         {
             <li>
                 <Card GameCard="@card" IsPlayable="@IsCardPlayable(card)" OnClick="@OnCardClicked" />
             </li>
         }
-        <li><button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button></li>
     </ul>
+    <button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button>
 </section>
 
 @code {

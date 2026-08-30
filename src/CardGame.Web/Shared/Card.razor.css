@@ -10,6 +10,7 @@ dl, dt, dd {
 
 img {
   min-height: 8rem;
+  max-height: 8rem;
 }
 
 .card-article {
@@ -17,6 +18,7 @@ img {
   width: 10rem;
   min-height: 14rem;
   text-align: center;
+  background-color: antiquewhite;
 }
 
 .card-text {
