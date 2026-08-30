@@ -1,4 +1,5 @@
 # Card Game Engine
+Playable game: https://jmarkowitz098.github.io/card-game-engine/
 
 ## Setup
 
