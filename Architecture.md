@@ -25,13 +25,29 @@ A `Phase` enum (`Title`/`Setup`/`Mulligan`/`Play`/`GameOver`) drives an `@switch
 - Attack vs. defend routing: `OnCardClicked` compares `GameState.ActivePlayer` to `_activePlayerId` to decide `DeclareAttack` vs. `DeclareDefense`. `Hand.razor`'s "Pass" button invokes the same callback with a `null` card, reusing the engine's existing null-card-means-decline semantics for both roles.
 - `Phase.GameOver` is entered from `OnCardClicked`'s defense branch by checking `GameState.Phase == TurnPhase.MatchEnded` right after a successful `DeclareDefense`; the winner is derived from whichever player's `CurrentHealth` is 0 — nothing stores a `Winner` anywhere else.
 
-**Components** (`Shared/`), all presentational — no rules logic; only `Home.razor.cs` talks to `GameSessionService` directly, everything else takes what it needs as `[Parameter]`s:
+### Heading hierarchy
+One persistent, visible `<h1>Card Game</h1>` in `Home.razor`, outside the `@switch` — the only heading shown on every phase. Everything else nests under it as `<h2>`/`<h3>`, several deliberately hidden (`.visually-hidden` — clipped off-screen via `position:absolute`+`clip-path`, not `display:none`, so screen readers still see them) since their meaning is already obvious from visible content around them:
+```
+h1: Card Game (visible)
+  h2: Player Board (hidden)
+    h3: CurrentPlayerState (visible — e.g. "Jared is Attacking")
+    h3: Player Stats (hidden)
+    h3: Piles (hidden)
+    h3: Hand (hidden)
+  h2: Opponent Info (visible — via OpponentInformation.razor's Name)
+    (PlayerBoardInformation content, unheaded)
+```
+Each screen (`Setup`, `Mulligan`, hand-off, etc.) is effectively treated as "its own page" for heading purposes, since only one `Phase`/overlay is ever in the DOM at a time — not yet fully caught up to this model (`Mulligan.razor` still uses `<h3>` where it should be `<h2>`; `Setup.razor` has no heading yet).
+
+**Components** (`Shared/Board/` + `Shared/Flow/`), all presentational — no rules logic; only `Home.razor.cs` talks to `GameSessionService` directly, everything else takes what it needs as `[Parameter]`s:
 - `Card.razor` — one `BattleCard`'s stats. `GameCard` (required), `IsPlayable` (styling hook, not yet wired to any visual difference), `OnClick` (`EventCallback<BattleCard>`, optional).
 - `Hand.razor` — loops a card list through `Card`, forwarding `OnCardClicked` and calling `IsCardPlayable(card)` per card; also renders a "Pass" button (see Page flow).
-- `PlayerStats.razor` — health/energy readout from a `PlayerState`.
-- `Pile.razor` — a card-back count (`Name`, `NumCards`); one component reused for both draw and discard piles rather than separate `DrawPile`/`DiscardPile` files.
-- `PlayerBoardInformation.razor` — a player's name + stats + both piles, plus an optional `AttackCard` (`BattleCard?`) shown while the viewer is defending.
-- `PlayerBoard.razor` — `PlayerBoardInformation` + `Hand`, plus an `IsAttacking` label. `IsCardPlayable(card)` checks `card.Cost <= Stats.CurrentEnergy` (no longer a hardcoded `true`).
+- `PlayerStats.razor` — health/energy readout from a `PlayerState`, as `<dl>`/`<dt>`/`<dd>` pairs.
+- `Pile.razor` — a card-back count (`Name`, `NumCards`), also `<dl>`/`<dt>`/`<dd>`; one component reused for both draw and discard piles rather than separate `DrawPile`/`DiscardPile` files. No heading of its own — since it's instantiated twice, the `Piles` heading lives one level up.
+- `CurrentPlayerState.razor` — a player's name + Attacking/Defending status, combined into one visible `<h3>`. `IsAttacking` (required `bool`), `CurrentPlayer` (required `string`).
+- `PlayerBoardInformation.razor` — a player's stats + both piles, plus an optional `AttackCard` (`BattleCard?`) shown while the viewer is defending. No longer takes `PlayerName` — that moved to `CurrentPlayerState`.
+- `PlayerBoard.razor` — `CurrentPlayerState` + `PlayerBoardInformation` side by side (`.player-info`), `Hand` below. `IsCardPlayable(card)` checks `card.Cost <= Stats.CurrentEnergy` (no longer a hardcoded `true`).
+- `OpponentInformation.razor` — wraps `PlayerBoardInformation` for the opponent's side, with its own `Name` heading and `AttackCard` display.
 - `Setup.razor` — player-name entry (`<form>`/`<fieldset>`/`<label>`), no `@page` directive; `OnSubmit` carries both names up as `EventCallback<(string, string)>`.
 - `Mulligan.razor` — a player's hand + yes/no; `OnSubmit` is `EventCallback<bool>`.
 - `PostMulliganHand.razor`, `PendingHandoffTo.razor`, `VictoryScreen.razor` — see Page flow above.
@@ -43,12 +59,15 @@ CSS isolation (`<Component>.razor.css`, e.g. `Card.razor.css`) is the primary st
 - `<dl>`/`<dt>`/`<dd>` is the semantic element for label→value pairs (a card's Cost/Charge, Attack/Defense) — more correct than two `<p>` tags, but note `<dd>` carries its own default left-margin (~40px indent) that a CSS reset needs to explicitly include (`dl, dt, dd { margin: 0; }`), easy to miss since `<p>` never had one.
 - `align-items` on a flex container controls whether its children stretch to fill the cross axis (default) or shrink to their own content size (`center`, etc.) — a child that needs to stay full-width regardless of a `center`d parent should set `align-self: stretch` on itself, overriding the parent just for that one element.
 - Static assets (images, etc.) must live under `wwwroot` (e.g. `wwwroot/images/`) to be reachable at runtime — anywhere else in the repo isn't served, build or no build.
-- `dotnet watch` not picking up `.razor.css` changes is the same known macOS SDK 10.0.300+ bug as the general watch breakage (still present on the currently-installed 10.0.400) — it can't find `staticwebassets.development.json`, which scoped-CSS bundling depends on. Workaround: an external file-watcher (`fswatch`) invoking a plain `dotnet build` directly sidesteps watch's own broken rebuild-detection.
+- `dotnet watch` not picking up `.razor.css` changes is the same known macOS SDK 10.0.300+ bug as the general watch breakage (still present on the currently-installed 10.0.400) — it can't find `staticwebassets.development.json`, which scoped-CSS bundling depends on. Fix confirmed: `dotnet watch --no-hot-reload` (now the documented dev command in `README.md`).
+- Component filenames are case-sensitive on the GitHub Actions deploy (`ubuntu-latest`) even though local macOS dev tolerates the wrong case — a `.razor.css` saved as e.g. `Pile.Razor.css` builds and styles fine locally but silently fails to bundle once deployed.
+- A recurring "stuck on loading spinner" / `Failed to start platform... Importing a module script failed` browser error traces to incremental `dotnet build` leaving multiple differently-fingerprinted `CardGame.Web.*.wasm`/`.pdb` copies in `_framework` — `dotnet clean` does not remove them. Fix: full `rm -rf src/CardGame.Web/bin src/CardGame.Web/obj` + rebuild, dev-server restart, and a real hard refresh (documented in `README.md`'s Troubleshooting section).
 
 **Conventions:** every required parameter gets both `[EditorRequired]` (Razor-level warning if the call site omits it) and C#'s `required` modifier (satisfies nullable analysis — `EditorRequired` alone does not; note Razor does *not* enforce `required` at component call sites the way C# enforces it on object initializers, so a missing required parameter compiles and silently defaults); no `Engine.`-qualified types when `@using CardGame.Engine` is already in scope; `@` prefix on every parameter-binding attribute value, including bare variables, but not plain string literals; a component's own file name can never also be a member name inside it (`CS0542` — e.g. `Card.razor` can't have a `Card` parameter, must be `GameCard`); `<h3>` for a component's own section title, `<p>`/`<span>` for data.
 - A component only gets data through its own `[Parameter]`s — never by reading a parent's private fields or injected services directly; those aren't in scope for a child component.
 - `T!` (null-forgiving) does not unwrap `Nullable<T>` — it only suppresses nullable-*reference*-type warnings. On a nullable value type (`PlayerId?`, etc.) it's a no-op and the expression stays `T?`; use `.Value` to get `T`.
 - An attribute value chaining an operator right after an `@`-prefixed member access (`@Game.PlayerB!`, `!.Value`, etc.) can trip Razor's parser (`RZ9986`, "complex content") — wrap it as an explicit expression instead: `@(Game.PlayerB!)`.
+- Watch for similarly-named component-vs-data-type collisions once a component's name is close to an engine type's (`PlayerStats.razor` the component vs. `CardGame.Engine.PlayerState` the data class) — both being in scope together via `@using` makes it easy to type/autocomplete the wrong one into a `[Parameter]`'s type, producing a real `CS1503`, not just an IDE quirk.
 - No bUnit/component-level UI tests exist or are currently planned — `GameSessionService`/`GameState` carry all real logic and are fully unit-tested; UI-layer tests would mostly re-verify wiring. Revisit only if `Home`'s phase/hand-off orchestration keeps growing in complexity.
 
 ## Deployment
@@ -103,10 +122,14 @@ src/
   CardGame.Web/             — Blazor WebAssembly front end; references CardGame.Engine + CardGame.DeckManagement
     Pages/                  Home.razor + Home.razor.cs (page-level phase state machine); NotFound.razor is an unremoved template placeholder
     Layout/                 MainLayout.razor, NavMenu.razor
-    Shared/                 Card.razor, Hand.razor, PlayerStats.razor, Pile.razor, PlayerBoardInformation.razor,
-                            PlayerBoard.razor, Setup.razor, Mulligan.razor, PostMulliganHand.razor,
-                            PendingHandoffTo.razor, VictoryScreen.razor
+    Shared/
+      Board/                Card, Hand, Pile, PlayerStats, CurrentPlayerState, PlayerBoardInformation,
+                            PlayerBoard, OpponentInformation — the player-board composition tree
+      Flow/                 Setup, Mulligan, PostMulliganHand, PendingHandoffTo, VictoryScreen — whole-screen
+                            phase components
     Services/               GameSessionService.cs
+    _Imports.razor          — @using CardGame.Web.Shared.Board / .Flow alongside the base .Shared; folder → namespace,
+                            so a new subfolder here needs a matching line added
 .github/
   workflows/deploy.yml     — build/test/publish CardGame.Web + deploy to GitHub Pages on push to main (see Deployment)
 tests/

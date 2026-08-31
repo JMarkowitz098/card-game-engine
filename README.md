@@ -32,6 +32,18 @@ dotnet run --project src/CardGame.Web # Run web client
 dotnet watch --no-hot-reload run --project src/CardGame.Web # Run web client (watch mode)
 ```
 
+## Troubleshooting
+
+**Browser stuck on the loading spinner, or shows `Failed to start platform... Importing a module script failed`:**
+Incremental `dotnet build` runs leave stale, differently-fingerprinted copies of `CardGame.Web.*.wasm`/`.pdb` in `_framework` — `dotnet clean` doesn't remove them. Fix:
+```bash
+rm -rf src/CardGame.Web/bin src/CardGame.Web/obj
+dotnet build src/CardGame.Web
+```
+Then fully stop and restart the dev server (don't just rebuild alongside it), and hard-refresh the browser tab rather than a normal reload:
+- Chrome/Firefox: Cmd+Shift+R
+- Safari: Cmd+Option+R (or Develop menu → Empty Caches for a more thorough clear)
+
 ### Create a new section, add it to the solution, and create references
 ```c#
 dotnet new classlib -n CardGame{NewSection} -o src/CardGame{NewSection}
