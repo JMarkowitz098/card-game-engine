@@ -1,9 +1,16 @@
 @using CardGame.Engine
 
 <section>
-    <h3>Player Stats</h3>
-    <span>Health: @Stats.CurrentHealth/@MaxHealth</span>
-    <span>Energy: @Stats.CurrentEnergy/@Stats.MaxEnergy</span>
+    <h3 class="visually-hidden">Player Stats</h3>
+    <dl class="stats-text">
+        <dt class="health">Health</dt>
+        <dd>@Stats.CurrentHealth/@MaxHealth</dd>
+    </dl>
+    <dl class="stats-text">
+        <dt class="energy">Energy</dt>
+        <dd>@Stats.CurrentEnergy/@Stats.MaxEnergy</dd>
+    </dl>
+
 </section>
 
 @code {

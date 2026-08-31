@@ -1,8 +1,11 @@
 @using CardGame.Engine
 
-<section style="border-style: solid">
-    <h2>@(IsAttacking ? "Attacking" : "Defending")</h2>
-    <PlayerBoardInformation Stats="@Stats" PlayerName="@PlayerName" />
+<section>
+    <h2 class="visually-hidden">Player Board</h2>
+    <div class="player-info">
+        <CurrentPlayerState IsAttacking="@IsAttacking" CurrentPlayer="@PlayerName"></CurrentPlayerState>
+        <PlayerBoardInformation Stats="@Stats" />
+    </div>
     <Hand Cards="@Hand" OnCardClicked="@OnCardClicked" IsCardPlayable="@IsCardPlayable" />
 </section>
 

@@ -1,7 +1,7 @@
-@using CardGame.Engine;
-
-<p>Pass the device to @PendingHandoffPlayerName</p>
-<button @onclick="@OnReadyClicked">Ready</button>
+<section>
+    <h2>Pass the device to @PendingHandoffPlayerName</h2>
+    <button @onclick="@OnReadyClicked">Ready</button>
+</section>
 
 @code {
     [Parameter, EditorRequired]

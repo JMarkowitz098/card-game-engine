@@ -1,25 +1,22 @@
 @using CardGame.Engine
 
 <section>
-    <h2 style="text-align: center;">@PlayerName</h2>
-    <div style=" display: flex; justify-content: space-evenly;">
-        <PlayerStats Stats="@Stats" />
+    <PlayerStats Stats="@Stats" />
+    <h3 class="visually-hidden">Card Piles</h3>
+    <div class="pile-group">
         <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
         <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
-        @if (AttackCard != null)
-        {
-            <Card GameCard="@AttackCard"></Card>
-        }
-
     </div>
+    @if (AttackCard != null)
+    {
+        <Card GameCard="@AttackCard"></Card>
+    }
+
 </section>
 
 @code {
     [Parameter, EditorRequired]
     public required PlayerState Stats { get; set; }
-
-    [Parameter, EditorRequired]
-    public required string PlayerName { get; set; }
 
     [Parameter]
     public BattleCard? AttackCard { get; set; }

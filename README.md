@@ -29,7 +29,7 @@ Open the folder in VS Code — `.vscode/settings.json` is checked in and already
 dotnet test                             # Run all tests
 dotnet run --project src/CardGame.Cli   # Run client
 dotnet run --project src/CardGame.Web # Run web client
-dotnet watch run --project src/CardGame.Web # Run web client (watch mode)
+dotnet watch --no-hot-reload run --project src/CardGame.Web # Run web client (watch mode)
 ```
 
 ### Create a new section, add it to the solution, and create references
