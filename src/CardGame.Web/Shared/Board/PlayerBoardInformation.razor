@@ -7,17 +7,9 @@
         <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
         <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
     </div>
-    @if (AttackCard != null)
-    {
-        <Card GameCard="@AttackCard"></Card>
-    }
-
 </section>
 
 @code {
     [Parameter, EditorRequired]
     public required PlayerState Stats { get; set; }
-
-    [Parameter]
-    public BattleCard? AttackCard { get; set; }
 }

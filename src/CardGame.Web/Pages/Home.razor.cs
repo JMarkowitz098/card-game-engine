@@ -29,6 +29,15 @@ public partial class Home : IDisposable
     };
     private readonly PlayerState _previewStats;
 
+    private readonly BattleCard _previewAttackCard = new(
+        "Ember Strike",
+        Cost: 1,
+        Charge: 1,
+        Attack: 3,
+        Defense: 0
+    );
+
+
     public Home()
     {
         _previewStats = new PlayerState(_previewHand);

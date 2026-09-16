@@ -21,6 +21,7 @@
                 @switch (_currentPhase)
                 {
                         case Phase.Title:
+                                <OpponentInformation Stats="@_previewStats" AttackCard="@_previewAttackCard" Name="Evil Man" />
                                 <PlayerBoard Stats="@_previewStats" Hand="@_previewHand" PlayerName="Jared" IsAttacking="true" />
                                 break;
                         case Phase.Setup:
@@ -30,8 +31,7 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <PlayerBoardInformation Stats="@GetOpponent()" PlayerName="@GetOpponentName()"
-                                                        AttackCard="@GetAttackingCard()" />
+                                <OpponentInformation Stats="@GetOpponent()" AttackCard="@GetAttackingCard()" Name="@GetOpponentName()" />
                                 <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
                                              PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
                                 break;
