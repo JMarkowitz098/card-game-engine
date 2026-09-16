@@ -1,0 +1,31 @@
+@using CardGame.Engine
+
+<section>
+    <h3 class="visually-hidden">Hand</h3>
+    <ul>
+        @foreach (var card in Cards)
+        {
+            <li>
+                <Card GameCard="@card" IsPlayable="@IsCardPlayable(card)" OnClick="@OnCardClicked" />
+            </li>
+        }
+    </ul>
+    @if (ShowPassButton)
+    {
+        <button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<BattleCard> Cards { get; set; }
+
+    [Parameter]
+    public bool ShowPassButton { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<BattleCard> OnCardClicked { get; set; }
+
+    [Parameter, EditorRequired]
+    public required Func<BattleCard, bool> IsCardPlayable { get; set; }
+}

@@ -1,0 +1,10 @@
+section {
+  display: flex;
+  flex-direction: column;
+  border-style: solid;
+  background-color: honeydew;
+}
+
+.player-info {
+  display: flex;
+}

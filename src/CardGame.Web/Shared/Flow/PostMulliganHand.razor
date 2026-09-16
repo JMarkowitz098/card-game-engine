@@ -1,0 +1,14 @@
+@using CardGame.Engine
+<section class="post-mulligan-section">
+    <Hand Cards="@Hand" IsCardPlayable="@(_ => false)"/>
+    <p>Please review your cards then continue</p>
+    <button @onclick="@OnContinue">Continue</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<BattleCard> Hand { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnContinue { get; set; }
+}

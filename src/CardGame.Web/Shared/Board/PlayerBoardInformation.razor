@@ -1,0 +1,15 @@
+@using CardGame.Engine
+
+<section>
+    <PlayerStats Stats="@Stats" />
+    <h3 class="visually-hidden">Card Piles</h3>
+    <div class="pile-group">
+        <Pile Name="Draw Pile" NumCards="@Stats.DrawPile.Count" />
+        <Pile Name="Discard Pile" NumCards="@Stats.DiscardPile.Count" />
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PlayerState Stats { get; set; }
+}

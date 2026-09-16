@@ -1,0 +1,15 @@
+<section>
+    <dl>
+        <dt>@Name</dt>
+        <dd class="pile-square">@NumCards</dd>
+    </dl>
+
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required int NumCards { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Name { get; set; }
+}

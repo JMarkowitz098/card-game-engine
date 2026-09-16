@@ -1,0 +1,27 @@
+@using CardGame.Engine
+
+<section class="opponent-info">
+    <h2>@Name Information</h2>
+
+    <PlayerBoardInformation Stats="@Stats" />
+    <div>
+        <p>Attacking Card</p>
+        @if (AttackCard != null)
+        {
+            <div class="card-placeholder">
+                <Card GameCard="@AttackCard"></Card>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PlayerState Stats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Name { get; set; }
+
+    [Parameter]
+    public BattleCard? AttackCard { get; set; }
+}

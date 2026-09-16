@@ -1,0 +1,17 @@
+.setup-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border: 2px solid black;
+  border-radius: 8px;
+  font-size: large;
+  background-color: seashell;
+}

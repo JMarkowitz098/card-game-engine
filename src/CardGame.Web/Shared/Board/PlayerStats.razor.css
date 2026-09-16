@@ -1,0 +1,29 @@
+section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 12rem;
+  font-size: large;
+}
+
+dt,
+dd {
+  margin: 0;
+}
+
+.health {
+  color: green;
+}
+
+.energy {
+  color: red;
+}
+
+.stats-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin: 1rem;
+}

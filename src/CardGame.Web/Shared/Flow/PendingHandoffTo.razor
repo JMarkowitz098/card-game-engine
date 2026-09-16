@@ -1,0 +1,12 @@
+<section class="handoff-section">
+    <h2>Pass the device to @PendingHandoffPlayerName</h2>
+    <button @onclick="@OnReadyClicked">Ready</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string PendingHandoffPlayerName { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnReadyClicked { get; set; }
+}

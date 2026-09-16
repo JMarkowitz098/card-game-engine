@@ -2,9 +2,8 @@
 @inject GameSessionService Game
 @implements IDisposable
 
-<PageTitle>Home</PageTitle>
-
 <main>
+        <h1>Leader Card Battle Bros</h1>
         @if (_showingPostMulliganHand)
         {
                 <PostMulliganHand Hand="@(GetActivePlayer().Hand)" OnContinue="@OnPostMulliganContinue" />
@@ -20,7 +19,7 @@
                 @switch (_currentPhase)
                 {
                         case Phase.Title:
-                                <button @onclick="OnClickStart">Start Game</button>
+                                <Title OnClickStart="@OnClickStart" />
                                 break;
                         case Phase.Setup:
                                 <Setup OnSubmit="@OnSetupSubmitted" />
@@ -29,8 +28,7 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <PlayerBoardInformation Stats="@GetOpponent()" PlayerName="@GetOpponentName()"
-                                                        AttackCard="@GetAttackingCard()" />
+                                <OpponentInformation Stats="@GetOpponent()" AttackCard="@GetAttackingCard()" Name="@GetOpponentName()" />
                                 <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
                                              PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
                                 break;
