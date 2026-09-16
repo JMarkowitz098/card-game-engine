@@ -21,6 +21,7 @@ public partial class Home : IDisposable
     private bool _isVsComputer;
     private string _playerAName = "";
     private string _playerBName = "";
+    private string _previousAction;
 
     protected override void OnInitialized()
     {
@@ -69,6 +70,9 @@ public partial class Home : IDisposable
         }
 
         Game.Mulligan(_activePlayerId.Value, willMulligan);
+        _previousAction = willMulligan
+            ? $"{GetActivePlayerName()} mulliganed"
+            : $"{GetActivePlayerName()} did not mulligan";
         _mulliganDecided.Add(_activePlayerId.Value);
 
         if (willMulligan)
@@ -165,14 +169,22 @@ public partial class Home : IDisposable
     {
         var aiCard = Logic.DeclareAttack(Game.PlayerB!.Hand, Game.PlayerB!.CurrentEnergy);
         Game.DeclareAttack(aiCard);
+        _previousAction =
+            aiCard != null
+                ? $"{GetOpponentName()} attacks with {aiCard.Name}"
+                : $"{GetOpponentName()} passes";
     }
 
     private void OnDeclareAttack(BattleCard Card)
     {
         var result = Game.DeclareAttack(Card);
+        _previousAction =
+            Card != null
+                ? $"{GetActivePlayerName()} attacks with {Card.Name}"
+                : $"{GetActivePlayerName()} passes";
         if (!result)
         {
-            Console.WriteLine("Can't use that card");
+            _previousAction = "Can't use that card";
         }
 
         if (!IsComputerPending())
@@ -187,8 +199,16 @@ public partial class Home : IDisposable
         else
         {
             var incomingAttack = Game.Game!.GetPendingAttackCard()!.Attack;
-            var aiCard = Logic.DeclareDefense(Game.PlayerB!.Hand, Game.PlayerB!.CurrentEnergy, incomingAttack);
+            var aiCard = Logic.DeclareDefense(
+                Game.PlayerB!.Hand,
+                Game.PlayerB!.CurrentEnergy,
+                incomingAttack
+            );
             Game.DeclareDefense(aiCard);
+            _previousAction =
+                aiCard != null
+                    ? $"{GetOpponentName()} defends with {aiCard.Name}"
+                    : $"{GetOpponentName()} passes";
             if (Game.Game!.Phase == TurnPhase.MatchEnded)
             {
                 _currentPhase = Phase.GameOver;
@@ -199,9 +219,13 @@ public partial class Home : IDisposable
     private void OnDeclareDefense(BattleCard Card)
     {
         var result = Game.DeclareDefense(Card);
+        _previousAction =
+            Card != null
+                ? $"{GetActivePlayerName()} defends with {Card.Name}"
+                : $"{GetActivePlayerName()} passes";
         if (!result)
         {
-            Console.WriteLine("Can't use that card");
+            _previousAction = "Can't use that card";
         }
         else if (Game.Game!.Phase == TurnPhase.MatchEnded)
         {

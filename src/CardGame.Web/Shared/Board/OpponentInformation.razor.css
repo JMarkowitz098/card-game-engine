@@ -9,12 +9,45 @@ h2 {
   align-self: center;
 }
 
-p {
+h3 {
   text-align: center;
 }
 
-.card-placeholder {
-  min-width: 10rem;
-  background-color: red;
+p {
+  text-align: center;
+  text-wrap: wrap;
+}
+
+.placeholder {
+  width: 10rem;
+  height: 15rem;
+  background-color: azure;
   margin: 1rem;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.placeholder > p,
+.placeholder ::deep .card-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder ::deep .card-article {
+  width: 8rem;
+  min-height: 11rem;
+}
+
+.placeholder ::deep img {
+  min-height: 4rem;
+  max-height: 4rem;
+}
+
+.title {
+  border-bottom: 1px solid black;
+  font-weight: bold;
 }

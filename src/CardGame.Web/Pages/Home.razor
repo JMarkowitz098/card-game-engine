@@ -8,10 +8,10 @@
         {
                 <PostMulliganHand Hand="@(GetActivePlayer().Hand)" OnContinue="@OnPostMulliganContinue" />
         }
-        else if (Game.PendingHandOffTo != null)
+        else if (Game.PendingHandOffTo != null && Game.PendingHandOffTo != _activePlayerId)
         {
                 <PendingHandoffTo PendingHandoffPlayerName="@GetPlayerName(Game.PendingHandOffTo!.Value)"
-                                  OnReadyClicked="@OnReadyClicked" />
+                                  OnReadyClicked="@OnReadyClicked" PreviousAction="@_previousAction" />
 
         }
         else
@@ -28,7 +28,8 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <OpponentInformation Stats="@GetOpponent()" AttackCard="@GetAttackingCard()" Name="@GetOpponentName()" />
+                                <OpponentInformation Stats="@GetOpponent()" AttackCard="@GetAttackingCard()" Name="@GetOpponentName()"
+                                                     PreviousAction="@_previousAction" />
                                 <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
                                              PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
                                 break;

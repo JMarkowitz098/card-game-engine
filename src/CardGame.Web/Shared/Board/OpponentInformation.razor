@@ -2,17 +2,18 @@
 
 <section class="opponent-info">
     <h2>@Name Information</h2>
-
     <PlayerBoardInformation Stats="@Stats" />
-    <div>
-        <p>Attacking Card</p>
+    <section class="placeholder">
+        <h3 class="title">Attacking Card</h3>
         @if (AttackCard != null)
         {
-            <div class="card-placeholder">
-                <Card GameCard="@AttackCard"></Card>
-            </div>
+            <Card GameCard="@AttackCard"></Card>
         }
-    </div>
+    </section>
+    <section class="placeholder">
+        <h3 class="title">Game Log</h3>
+        <p>@PreviousAction</p>
+    </section>
 </section>
 
 @code {
@@ -24,4 +25,7 @@
 
     [Parameter]
     public BattleCard? AttackCard { get; set; }
+
+    [Parameter]
+    public string PreviousAction { get; set; }
 }
