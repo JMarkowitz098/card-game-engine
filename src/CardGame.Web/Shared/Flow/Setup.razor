@@ -1,14 +1,14 @@
-<section>
+<section class="setup-section">
     <h2>Game Setup</h2>
     <form @onsubmit="@HandleSubmit" @onsubmit:preventDefault>
         <fieldset>
             <legend>Player A</legend>
-            <label for="playerA">Name:</label>
+            <label class="visually-hidden" for="playerA">Name:</label>
             <input id="playerA" @bind="@_playerAName" />
         </fieldset>
         <fieldset>
             <legend>Player B</legend>
-            <label for="playerB">Name:</label>
+            <label class="visually-hidden" for="playerB">Name:</label>
             <input id="playerB" @bind="@_playerBName" />
         </fieldset>
         <button>Submit</button>

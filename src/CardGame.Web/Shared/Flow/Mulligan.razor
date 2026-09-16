@@ -1,8 +1,10 @@
 @using CardGame.Engine
-<section>
+<section class="mulligan-section">
     <h2>Do you want to mulligan?</h2>
-    <button @onclick="() => OnSubmit.InvokeAsync(true)">Yes</button>
-    <button @onclick="() => OnSubmit.InvokeAsync(false)">No</button>
+    <div>
+        <button @onclick="() => OnSubmit.InvokeAsync(true)">Yes</button>
+        <button @onclick="() => OnSubmit.InvokeAsync(false)">No</button>
+    </div>
 </section>
 <Hand Cards="@PlayerHand" IsCardPlayable="@IsCardPlayable"></Hand>
 

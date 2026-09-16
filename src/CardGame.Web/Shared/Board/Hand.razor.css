@@ -17,20 +17,3 @@ section {
   background-color: honeydew;
   border: 1px solid black;
 }
-
-button {
-  width: 10rem;
-  min-height: 4rem;
-  background-color: aqua;
-  font: inherit;
-  margin-bottom: 1rem;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}

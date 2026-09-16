@@ -10,12 +10,18 @@
             </li>
         }
     </ul>
-    <button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button>
+    @if (ShowPassButton)
+    {
+        <button @onclick="() => OnCardClicked.InvokeAsync(null)">Pass</button>
+    }
 </section>
 
 @code {
     [Parameter, EditorRequired]
     public required IReadOnlyList<BattleCard> Cards { get; set; }
+
+    [Parameter]
+    public bool ShowPassButton { get; set; } = false;
 
     [Parameter]
     public EventCallback<BattleCard> OnCardClicked { get; set; }

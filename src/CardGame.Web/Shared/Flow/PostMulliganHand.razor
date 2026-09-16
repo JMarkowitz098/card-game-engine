@@ -1,7 +1,7 @@
 @using CardGame.Engine
-<section>
-    <p>Your hand:</p>
-    <Hand Cards="@Hand" IsCardPlayable="@(_ => false)" />
+<section class="post-mulligan-section">
+    <Hand Cards="@Hand" IsCardPlayable="@(_ => false)"/>
+    <p>Please review your cards then continue</p>
     <button @onclick="@OnContinue">Continue</button>
 </section>
 

@@ -1,0 +1,9 @@
+<section class="title-section">
+    <img src="images/title-placeholder.jpg" alt="I am the title screen image" />
+    <button @onclick="OnClickStart">Start</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public EventCallback OnClickStart { get; set; }
+}
