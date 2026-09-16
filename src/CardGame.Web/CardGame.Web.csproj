@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CardGame.Engine\CardGame.Engine.csproj" />
     <ProjectReference Include="..\CardGame.DeckManagement\CardGame.DeckManagement.csproj" />
+    <ProjectReference Include="..\CardGame.Ai\CardGame.Ai.csproj" />
   </ItemGroup>
 
 </Project>

@@ -135,3 +135,14 @@ Dated log of what's been done. `Architecture.md` holds current state only — th
 - Reorganized `Shared/` (18 flat files) into `Shared/Board/` (the player-board composition tree: `Card`, `Hand`, `Pile`, `PlayerStats`, `CurrentPlayerState`, `PlayerBoardInformation`, `PlayerBoard`, `OpponentInformation`) and `Shared/Flow/` (whole-screen phase components: `Setup`, `Mulligan`, `PostMulliganHand`, `PendingHandoffTo`, `VictoryScreen`), via `git mv` to preserve history. Moving into subfolders changes each component's C# namespace (folder path, same as any C# type), so `_Imports.razor` needed two new `@using` lines (`CardGame.Web.Shared.Board`, `CardGame.Web.Shared.Flow`) for every component to keep resolving by its short tag name project-wide.
 - Confirmed `dotnet watch --no-hot-reload` actually fixes the CSS-not-refreshing issue from 2026-08-28/-30 (the macOS SDK 10.0.300+ `staticwebassets.development.json` bug) — now the documented default dev command in `README.md`.
 - Diagnosed a recurring "stuck on loading spinner" / `Failed to start platform... Importing a module script failed` browser error (hit twice) — root cause: incremental `dotnet build` accumulates multiple differently-fingerprinted `CardGame.Web.*.wasm`/`.pdb` copies in `_framework`, and `dotnet clean` does *not* remove them (confirmed empirically — running it left the count unchanged, or higher). Fixed both times via a full `rm -rf src/CardGame.Web/bin src/CardGame.Web/obj` + rebuild, then a full dev-server restart and a real hard refresh (Safari's is Cmd+Option+R, not Chrome/Firefox's Cmd+Shift+R). Documented as a `README.md` Troubleshooting section for next time.
+
+## 2026-09-16
+
+1. Added `Title.razor` screen; removed the old `Home.razor` preview/mock harness now that a real title screen exists.
+2. Made `Hand`'s pass button optional (`ShowPassButton`, default false) instead of mulligan-specific.
+3. Moved shared button and `.visually-hidden` styling out of per-component CSS into `app.css`.
+4. Removed unused Bootstrap library files from `wwwroot/lib`.
+5. Fixed accessibility issues on `Setup.razor` (legend/label order, hidden labels) and a broken `VictoryScreen.razor.css` selector.
+6. Added/updated scoped CSS across `Title`, `Mulligan`, `PendingHandoffTo`, `PostMulliganHand`, `Setup`, `VictoryScreen`, and `Home`.
+7. Planned a Vs Computer mode (design doc, no engine/service changes needed — reuses existing `CardGame.Ai.Logic`).
+8. Started implementing it: `CardGame.Web` now references `CardGame.Ai`; `Title.razor` has separate Vs Human/Vs Computer buttons wired through to `Home`.

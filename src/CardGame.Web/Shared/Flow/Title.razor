@@ -1,9 +1,12 @@
 <section class="title-section">
     <img src="images/title-placeholder.jpg" alt="I am the title screen image" />
-    <button @onclick="OnClickStart">Start</button>
+    <div>
+        <button @onclick="() => OnClickStart.InvokeAsync(false)">Vs Human</button>
+        <button @onclick="() => OnClickStart.InvokeAsync(true)">Vs Computer</button>
+    </div>
 </section>
 
 @code {
     [Parameter, EditorRequired]
-    public EventCallback OnClickStart { get; set; }
+    public EventCallback<bool> OnClickStart { get; set; }
 }

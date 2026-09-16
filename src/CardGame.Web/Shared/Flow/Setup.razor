@@ -6,11 +6,14 @@
             <label class="visually-hidden" for="playerA">Name:</label>
             <input id="playerA" @bind="@_playerAName" />
         </fieldset>
-        <fieldset>
-            <legend>Player B</legend>
-            <label class="visually-hidden" for="playerB">Name:</label>
-            <input id="playerB" @bind="@_playerBName" />
-        </fieldset>
+        @if (!IsVsComputer)
+        {
+            <fieldset>
+                <legend>Player B</legend>
+                <label class="visually-hidden" for="playerB">Name:</label>
+                <input id="playerB" @bind="@_playerBName" />
+            </fieldset>
+        }
         <button>Submit</button>
     </form>
 </section>
@@ -21,6 +24,9 @@
 
     [Parameter, EditorRequired]
     public EventCallback<(string PlayerAName, string PlayerBName)> OnSubmit { get; set; }
+
+    [Parameter, EditorRequired]
+    public required bool IsVsComputer { get; set; }
 
     private async Task HandleSubmit()
     {

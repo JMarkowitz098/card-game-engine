@@ -44,7 +44,15 @@ Then fully stop and restart the dev server (don't just rebuild alongside it), an
 - Chrome/Firefox: Cmd+Shift+R
 - Safari: Cmd+Option+R (or Develop menu → Empty Caches for a more thorough clear)
 
-### Create a new section, add it to the solution, and create references
+## Create a reference
+`dotnet add <path-to-csproj-that-needs-the-reference> reference <path-to-csproj-being-referenced>`
+
+Example
+```bash
+dotnet add src/CardGame.Web/CardGame.Web.csproj reference src/CardGame.Ai/CardGame.Ai.csproj
+```
+
+## Create a new section, add it to the solution, and create references
 ```c#
 dotnet new classlib -n CardGame{NewSection} -o src/CardGame{NewSection}
 dotnet sln CardGame.slnx add src/CardGame{NewSection}/CardGame{NewSection}.csproj

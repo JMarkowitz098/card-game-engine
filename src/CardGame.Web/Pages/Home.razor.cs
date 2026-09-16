@@ -1,3 +1,4 @@
+using CardGame.Ai;
 using CardGame.Engine;
 
 namespace CardGame.Web.Pages;
@@ -17,12 +18,14 @@ public partial class Home : IDisposable
     private PlayerId? _activePlayerId;
     private readonly HashSet<PlayerId> _mulliganDecided = new();
     private bool _showingPostMulliganHand;
+    private bool _isVsComputer;
     private string _playerAName = "";
     private string _playerBName = "";
 
     protected override void OnInitialized()
     {
         Game.Changed += StateHasChanged;
+        if (_isVsComputer) { }
     }
 
     public void Dispose()
@@ -35,35 +38,25 @@ public partial class Home : IDisposable
     {
         if (Game.Game!.ActivePlayer == _activePlayerId)
         {
-            var result = Game.DeclareAttack(Card);
-            if (!result)
-            {
-                Console.WriteLine("Can't use that card");
-            }
+            OnDeclareAttack(Card);
         }
         else
         {
-            var result = Game.DeclareDefense(Card);
-            if (!result)
-            {
-                Console.WriteLine("Can't use that card");
-            }
-            else if (Game.Game!.Phase == TurnPhase.MatchEnded)
-            {
-                _currentPhase = Phase.GameOver;
-            }
+            OnDeclareDefense(Card);
         }
     }
 
-    public void OnClickStart()
+    public void OnClickStart(bool isVsComputer)
     {
+        Console.WriteLine(isVsComputer);
+        _isVsComputer = isVsComputer;
         _currentPhase = Phase.Setup;
     }
 
     private void OnSetupSubmitted((string PlayerAName, string PlayerBName) names)
     {
         _playerAName = names.PlayerAName;
-        _playerBName = names.PlayerBName;
+        _playerBName = _isVsComputer ? "Computer" : names.PlayerBName;
         Game.SetupPlayers();
         _currentPhase = Phase.Mulligan;
     }
@@ -86,6 +79,13 @@ public partial class Home : IDisposable
         {
             TryBeginGameIfMulliganComplete();
         }
+
+        if (IsComputerPending())
+        {
+            Game.Mulligan(PlayerId.PlayerB, false);
+            _mulliganDecided.Add(PlayerId.PlayerB);
+            TryBeginGameIfMulliganComplete();
+        }
     }
 
     private void OnPostMulliganContinue()
@@ -96,7 +96,7 @@ public partial class Home : IDisposable
 
     private void TryBeginGameIfMulliganComplete()
     {
-        if (_mulliganDecided.Count == 2)
+        if (_mulliganDecided.Count == 2 && Game.Game == null)
         {
             Game.BeginGame(PlayerId.PlayerA);
             _currentPhase = Phase.Play;
@@ -149,5 +149,67 @@ public partial class Home : IDisposable
         return Game.Game!.PlayerA.CurrentHealth == 0
             ? GetPlayerName(PlayerId.PlayerB)
             : GetPlayerName(PlayerId.PlayerA);
+    }
+
+    private bool IsComputerTurn()
+    {
+        return _activePlayerId == PlayerId.PlayerB && _isVsComputer;
+    }
+
+    private bool IsComputerPending()
+    {
+        return Game.PendingHandOffTo == PlayerId.PlayerB && _isVsComputer;
+    }
+
+    private void TakeComputerAttackTurn()
+    {
+        var aiCard = Logic.DeclareAttack(Game.PlayerB!.Hand, Game.PlayerB!.CurrentEnergy);
+        Game.DeclareAttack(aiCard);
+    }
+
+    private void OnDeclareAttack(BattleCard Card)
+    {
+        var result = Game.DeclareAttack(Card);
+        if (!result)
+        {
+            Console.WriteLine("Can't use that card");
+        }
+
+        if (!IsComputerPending())
+        {
+            return;
+        }
+
+        if (Game.Game!.ActivePlayer == PlayerId.PlayerB)
+        {
+            TakeComputerAttackTurn();
+        }
+        else
+        {
+            var incomingAttack = Game.Game!.GetPendingAttackCard()!.Attack;
+            var aiCard = Logic.DeclareDefense(Game.PlayerB!.Hand, Game.PlayerB!.CurrentEnergy, incomingAttack);
+            Game.DeclareDefense(aiCard);
+            if (Game.Game!.Phase == TurnPhase.MatchEnded)
+            {
+                _currentPhase = Phase.GameOver;
+            }
+        }
+    }
+
+    private void OnDeclareDefense(BattleCard Card)
+    {
+        var result = Game.DeclareDefense(Card);
+        if (!result)
+        {
+            Console.WriteLine("Can't use that card");
+        }
+        else if (Game.Game!.Phase == TurnPhase.MatchEnded)
+        {
+            _currentPhase = Phase.GameOver;
+        }
+        else if (IsComputerPending())
+        {
+            TakeComputerAttackTurn();
+        }
     }
 }

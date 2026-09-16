@@ -22,7 +22,7 @@
                                 <Title OnClickStart="@OnClickStart" />
                                 break;
                         case Phase.Setup:
-                                <Setup OnSubmit="@OnSetupSubmitted" />
+                                <Setup OnSubmit="@OnSetupSubmitted" IsVsComputer="@_isVsComputer" />
                                 break;
                         case Phase.Mulligan:
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
