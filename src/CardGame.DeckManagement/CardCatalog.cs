@@ -1,14 +1,23 @@
+using System.Text.Json;
+
 namespace CardGame.DeckManagement;
 
 public static class CardCatalog
 {
     public static List<CardTemplate> Load(string path)
     {
-        throw new NotImplementedException();
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Card catalog file not found: {path}", path);
+        }
+
+        var json = File.ReadAllText(path);
+        return JsonSerializer.Deserialize<List<CardTemplate>>(json) ?? [];
     }
 
     public static void Save(string path, List<CardTemplate> templates)
     {
-        throw new NotImplementedException();
+        var json = JsonSerializer.Serialize(templates);
+        File.WriteAllText(path, json);
     }
 }

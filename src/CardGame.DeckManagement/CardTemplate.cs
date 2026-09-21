@@ -13,6 +13,6 @@ public record CardTemplate(
 {
     public BattleCard ToBattleCard()
     {
-        throw new NotImplementedException();
+        return new BattleCard(Name, Cost, Charge, Attack, Defense);
     }
 }
