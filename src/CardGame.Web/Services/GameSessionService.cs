@@ -5,19 +5,33 @@ namespace CardGame.Web;
 
 public class GameSessionService
 {
+    private readonly HttpClient _httpClient;
+
+    public GameSessionService(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
     public PlayerState? PlayerA { get; private set; }
     public PlayerState? PlayerB { get; private set; }
     public PlayerId? PendingHandOffTo { get; private set; }
     public GameState? Game { get; private set; }
     public event Action? Changed;
 
-    public void SetupPlayers(
+    public async Task SetupPlayers(
         List<BattleCard>? seededDeckA = null,
         List<BattleCard>? seededDeckB = null
     )
     {
-        PlayerA = new PlayerState(seededDeckA ?? StarterDeck.Create());
-        PlayerB = new PlayerState(seededDeckB ?? StarterDeck.Create());
+        List<BattleCard>? starterDeck = null;
+        if (seededDeckA == null || seededDeckB == null)
+        {
+            var catalog = await CardCatalog.LoadAsync(_httpClient, "data/cards.json");
+            starterDeck = StarterDeck.Create(catalog, copiesPerCard: 3);
+        }
+
+        PlayerA = new PlayerState(seededDeckA ?? starterDeck!);
+        PlayerB = new PlayerState(seededDeckB ?? starterDeck!);
         PendingHandOffTo = PlayerId.PlayerA;
         PlayerA.DrawCards(5);
         PlayerB.DrawCards(5);

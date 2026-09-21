@@ -40,4 +40,11 @@ public static class StarterDeck
             )
             .ToList();
     }
+
+    public static List<BattleCard> Create(IEnumerable<CardTemplate> catalog, int copiesPerCard)
+    {
+        return catalog
+            .SelectMany(template => Enumerable.Repeat(template.ToBattleCard(), copiesPerCard))
+            .ToList();
+    }
 }

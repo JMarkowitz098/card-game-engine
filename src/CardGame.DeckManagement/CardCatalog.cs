@@ -1,9 +1,15 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace CardGame.DeckManagement;
 
 public static class CardCatalog
 {
+    public static async Task<List<CardTemplate>> LoadAsync(HttpClient client, string relativeUrl)
+    {
+        return await client.GetFromJsonAsync<List<CardTemplate>>(relativeUrl) ?? [];
+    }
+
     public static List<CardTemplate> Load(string path)
     {
         if (!File.Exists(path))

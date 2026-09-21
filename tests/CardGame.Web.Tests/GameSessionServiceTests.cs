@@ -1,20 +1,55 @@
-﻿using CardGame.Engine;
+using System.Net;
+using System.Text;
+using CardGame.Engine;
 using CardGame.Engine.Tests;
 
 namespace CardGame.Web.Tests;
 
 public class GameSessionServiceTests
 {
+    private sealed class FakeCardCatalogHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            const string json = """
+                [
+                    { "Name": "Spark", "Cost": 1, "Charge": 1, "Attack": 2, "Defense": 1, "ImagePath": null },
+                    { "Name": "Blaze", "Cost": 1, "Charge": 1, "Attack": 1, "Defense": 2, "ImagePath": null },
+                    { "Name": "Spicy", "Cost": 2, "Charge": 2, "Attack": 1, "Defense": 1, "ImagePath": null },
+                    { "Name": "Hot", "Cost": 2, "Charge": 0, "Attack": 4, "Defense": 3, "ImagePath": null },
+                    { "Name": "Fire", "Cost": 2, "Charge": 0, "Attack": 3, "Defense": 4, "ImagePath": null }
+                ]
+                """;
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    private static GameSessionService CreateGameSession()
+    {
+        var httpClient = new HttpClient(new FakeCardCatalogHandler())
+        {
+            BaseAddress = new Uri("http://localhost/"),
+        };
+        return new GameSessionService(httpClient);
+    }
+
     [Fact]
-    public void SetupPlayers_CreatesPlayerStatesAndDrawsFiveCardsEach()
+    public async Task SetupPlayers_CreatesPlayerStatesAndDrawsFiveCardsEach()
     {
         // Arrange
-        var gameSession = new GameSessionService();
+        var gameSession = CreateGameSession();
         var changedRaised = false;
         gameSession.Changed += () => changedRaised = true;
 
         // Act
-        gameSession.SetupPlayers();
+        await gameSession.SetupPlayers();
 
         // Assert
         Assert.NotNull(gameSession.PlayerA);
@@ -25,12 +60,12 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void Mulligan_PlayersCanMulligan()
+    public async Task Mulligan_PlayersCanMulligan()
     {
         // Arrange
-        var gameSession = new GameSessionService();
+        var gameSession = CreateGameSession();
         var changedRaised = false;
-        gameSession.SetupPlayers();
+        await gameSession.SetupPlayers();
         Assert.NotNull(gameSession.PlayerA);
         var originalHand = gameSession.PlayerA.Hand.ToList();
         Assert.Equal(PlayerId.PlayerA, gameSession.PendingHandOffTo);
@@ -50,7 +85,7 @@ public class GameSessionServiceTests
     public void Mulligan_ThrowsIfPlayersAreNotCreated()
     {
         // Arrange
-        var gameSession = new GameSessionService();
+        var gameSession = CreateGameSession();
         var changedRaised = false;
         gameSession.Changed += () => changedRaised = true;
 
@@ -68,11 +103,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void Mulligan_ThrowsIfGameHasStarted()
+    public async Task Mulligan_ThrowsIfGameHasStarted()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         gameSession.BeginGame(PlayerId.PlayerA);
         var changedRaised = false;
         gameSession.Changed += () => changedRaised = true;
@@ -91,11 +126,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void BeginGame_CreatesGameAndSetsActivePlayer()
+    public async Task BeginGame_CreatesGameAndSetsActivePlayer()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         var changedRaised = false;
         gameSession.Changed += () => changedRaised = true;
 
@@ -113,7 +148,7 @@ public class GameSessionServiceTests
     public void BeginGame_ThrowsIfPlayersAreNotCreated()
     {
         // Arrange
-        var gameSession = new GameSessionService();
+        var gameSession = CreateGameSession();
         var changedRaised = false;
         gameSession.Changed += () => changedRaised = true;
 
@@ -128,11 +163,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareAttack_ActivePlayerChanges_ReturnsTrue()
+    public async Task DeclareAttack_ActivePlayerChanges_ReturnsTrue()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         var changedRaised = false;
 
         // Act
@@ -149,11 +184,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareAttack_InvalidChoice_ReturnsFalse()
+    public async Task DeclareAttack_InvalidChoice_ReturnsFalse()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         var invalidCard = TestCards.Card();
         var changedRaised = false;
 
@@ -171,7 +206,7 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareAttack_RealCard_HandsOffToDefender()
+    public async Task DeclareAttack_RealCard_HandsOffToDefender()
     {
         // Arrange
         var seededDeckA = new List<Engine.BattleCard>
@@ -182,8 +217,8 @@ public class GameSessionServiceTests
             TestCards.Card(),
             TestCards.Card(),
         };
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers(seededDeckA);
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
         var changedRaised = false;
@@ -202,7 +237,7 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareDefense_InvalidChoiceAfterValidAttack_StaysOnDefender()
+    public async Task DeclareDefense_InvalidChoiceAfterValidAttack_StaysOnDefender()
     {
         // Arrange
         var seededDeckA = new List<Engine.BattleCard>
@@ -213,8 +248,8 @@ public class GameSessionServiceTests
             TestCards.Card(),
             TestCards.Card(),
         };
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers(seededDeckA);
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
         var invalidDefenseCard = TestCards.Card(name: "not in hand");
@@ -235,7 +270,7 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareDefense_ActivePlayerStaysSame_ReturnsTrue()
+    public async Task DeclareDefense_ActivePlayerStaysSame_ReturnsTrue()
     {
         // Arrange
         var seededDeckA = new List<Engine.BattleCard>
@@ -246,8 +281,8 @@ public class GameSessionServiceTests
             TestCards.Card(),
             TestCards.Card(),
         };
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers(seededDeckA);
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
         var changedRaised = false;
@@ -267,11 +302,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareDefense_InvalidChoice_ReturnsFalse()
+    public async Task DeclareDefense_InvalidChoice_ReturnsFalse()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         var changedRaised = false;
 
         // Act
@@ -288,7 +323,7 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void DeclareDefense_GameEnds_ReturnsTrue()
+    public async Task DeclareDefense_GameEnds_ReturnsTrue()
     {
         // Arrange
         var seededDeckA = new List<Engine.BattleCard>
@@ -299,8 +334,8 @@ public class GameSessionServiceTests
             TestCards.Card(attack: 100),
             TestCards.Card(attack: 100),
         };
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers(seededDeckA);
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers(seededDeckA);
         Assert.NotNull(gameSession.PlayerA);
         var playerA = gameSession.PlayerA;
         var changedRaised = false;
@@ -320,11 +355,11 @@ public class GameSessionServiceTests
     }
 
     [Fact]
-    public void ConfirmReady_SetsPendingHandOffToNull()
+    public async Task ConfirmReady_SetsPendingHandOffToNull()
     {
         // Arrange
-        var gameSession = new GameSessionService();
-        gameSession.SetupPlayers();
+        var gameSession = CreateGameSession();
+        await gameSession.SetupPlayers();
         var changedRaised = false;
 
         // Act
