@@ -26,7 +26,6 @@ public partial class Home : IDisposable
     protected override void OnInitialized()
     {
         Game.Changed += StateHasChanged;
-        if (_isVsComputer) { }
     }
 
     public void Dispose()
@@ -49,7 +48,6 @@ public partial class Home : IDisposable
 
     public void OnClickStart(bool isVsComputer)
     {
-        Console.WriteLine(isVsComputer);
         _isVsComputer = isVsComputer;
         _currentPhase = Phase.Setup;
     }
@@ -160,11 +158,6 @@ public partial class Home : IDisposable
             : GetPlayerName(PlayerId.PlayerA);
     }
 
-    private bool IsComputerTurn()
-    {
-        return _activePlayerId == PlayerId.PlayerB && _isVsComputer;
-    }
-
     private bool IsComputerPending()
     {
         return Game.PendingHandOffTo == PlayerId.PlayerB && _isVsComputer;
@@ -188,17 +181,17 @@ public partial class Home : IDisposable
     {
         var result = Game.DeclareAttack(Card);
 
-        if (Card != null)
-        {
-            _gameLog.Add($"{GetActivePlayerName()} attacks with {Card.Name}");
-        }
-        else
-        {
-            _gameLog.Add($"{GetActivePlayerName()} passes");
-        }
         if (!result)
         {
             _gameLog.Add("Can't use that card");
+        }
+        else
+        {
+            _gameLog.Add(
+                Card != null
+                    ? $"{GetActivePlayerName()} attacks with {Card.Name}"
+                    : $"{GetActivePlayerName()} passes"
+            );
         }
 
         if (!IsComputerPending())
@@ -212,7 +205,7 @@ public partial class Home : IDisposable
         }
         else
         {
-            var startingHealth = Game.PlayerB.CurrentHealth;
+            var startingHealth = Game.PlayerB!.CurrentHealth;
             var incomingAttack = Game.Game!.GetPendingAttackCard()!.Attack;
             var aiCard = Logic.DeclareDefense(
                 Game.PlayerB!.Hand,
@@ -229,10 +222,10 @@ public partial class Home : IDisposable
                 _gameLog.Add($"{GetOpponentName()} passes");
             }
 
-            if (startingHealth != Game.PlayerB.CurrentHealth)
+            if (startingHealth != Game.PlayerB!.CurrentHealth)
             {
                 _gameLog.Add(
-                    $"{GetOpponentName()} takes {startingHealth - Game.PlayerB.CurrentHealth} damage"
+                    $"{GetOpponentName()} takes {startingHealth - Game.PlayerB!.CurrentHealth} damage"
                 );
             }
 
@@ -247,27 +240,29 @@ public partial class Home : IDisposable
     {
         var currentDefenderHealth = GetActivePlayer().CurrentHealth;
         var result = Game.DeclareDefense(Card);
-        if (Card != null)
-        {
-            _gameLog.Add($"{GetActivePlayerName()} defends with {Card.Name}");
-        }
-        else
-        {
-            _gameLog.Add($"{GetActivePlayerName()} passes");
-        }
 
         if (!result)
         {
             _gameLog.Add("Can't use that card");
         }
-        else if (Game.Game!.Phase == TurnPhase.MatchEnded)
+        else
         {
-            _currentPhase = Phase.GameOver;
+            _gameLog.Add(
+                Card != null
+                    ? $"{GetActivePlayerName()} defends with {Card.Name}"
+                    : $"{GetActivePlayerName()} passes"
+            );
+
+            if (Game.Game!.Phase == TurnPhase.MatchEnded)
+            {
+                _currentPhase = Phase.GameOver;
+            }
+            else if (IsComputerPending())
+            {
+                TakeComputerAttackTurn();
+            }
         }
-        else if (IsComputerPending())
-        {
-            TakeComputerAttackTurn();
-        }
+
         var newHealth = GetActivePlayer().CurrentHealth;
         if (currentDefenderHealth != newHealth)
         {
