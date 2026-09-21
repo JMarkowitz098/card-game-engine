@@ -11,7 +11,7 @@
         else if (Game.PendingHandOffTo != null && Game.PendingHandOffTo != _activePlayerId)
         {
                 <PendingHandoffTo PendingHandoffPlayerName="@GetPlayerName(Game.PendingHandOffTo!.Value)"
-                                  OnReadyClicked="@OnReadyClicked" PreviousAction="@_previousAction" />
+                                  OnReadyClicked="@OnReadyClicked" />
 
         }
         else
@@ -28,7 +28,7 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <PlayPhaseBoard PreviousAction="@_previousAction" ActivePlayerStats="@GetActivePlayer()"
+                                <PlayPhaseBoard PreviousActions="@_gameLog" ActivePlayerStats="@GetActivePlayer()"
                                                 ActivePlayerName="@GetActivePlayerName()" IsActivePlayerAttacking="@IsActivePlayerAttacking()"
                                                 OpponentStats="@GetOpponent()" AttackingCard="@GetAttackingCard()" OpponentName="@GetOpponentName()"
                                                 OnCardClicked="@OnCardClicked">

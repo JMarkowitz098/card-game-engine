@@ -3,7 +3,7 @@
     <h2 class="visually-hidden">Player Board</h2>
     <div class="top-row">
         <div class="top-row-item">
-            <GameLog PreviousAction="@PreviousAction" />
+            <GameLog PreviousActions="@PreviousActions" />
         </div>
         <div class="top-row-item">
             <section class="player-info-box">
@@ -12,8 +12,7 @@
             </section>
         </div>
         <div class="top-row-item">
-            <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName"
-                                 PreviousAction="@PreviousAction" />
+            <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName" />
         </div>
     </div>
     <div class="middle-row">
@@ -25,7 +24,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public string PreviousAction { get; set; }
+    public IReadOnlyList<string> PreviousActions { get; set; }
 
     [Parameter, EditorRequired]
     public required PlayerState ActivePlayerStats { get; set; }
