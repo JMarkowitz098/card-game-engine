@@ -60,7 +60,7 @@ tests/
 - Deck consists of single leader cards and 40 battle cards
 - There are 4 elements (earth, fire, wind, water). For now let's use colors to keep things simple(earth - orange, fire - red, wind - green, water - blue)
 - Each leader can have 1 or 2 elements. The deck can only have cards of the leader's elements. Each leader has an effect
-- Leader starts with 10 health and 1 energy. 
+- Leader starts with 10 health and 2 energy. 
 - Energy replenishes at the start of every turn (both your turn and the opponents)
 - Each battle card can be used to attack or defend. They have an attack value and a defend value. They also have an energy cost value and an energy charge value. The charge value raises your max energy by that amount, but only when attacking. They also might have a special effect
 - When attacked, you mitigate the damage by defending. If you don't defend, you take all the damage. When defending with the same element as the attack, it costs half the energy

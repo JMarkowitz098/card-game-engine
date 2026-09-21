@@ -50,8 +50,8 @@ public class GameStateTests
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
         Assert.Empty(gameState.PlayerA.Hand);
-        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(2, gameState.PlayerA.MaxEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, gameState.PlayerA.MaxEnergy);
         Assert.Equal(4, result.Events.Count);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         var attackEvent = Assert.IsType<AttackDeclared>(result.Events[0]);
@@ -75,8 +75,8 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(0, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(4, result.Events.Count);
         Assert.Equal(9, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
@@ -98,8 +98,8 @@ public class GameStateTests
         // Assert
         Assert.False(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(1, gameState.PlayerA.MaxEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerA.MaxEnergy);
         Assert.Single(gameState.PlayerA.Hand);
     }
 
@@ -141,8 +141,8 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerB.CurrentEnergy);
         Assert.Single(result.Events);
         Assert.Equal(8, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
@@ -201,14 +201,14 @@ public class GameStateTests
         Assert.False(result.Success);
         Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
-        Assert.Equal(0, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, gameState.PlayerA.CurrentEnergy);
     }
 
     [Fact]
     public void DeclareAttack_CardNotAffordable_ReturnsFalse()
     {
         // Arrange
-        var expensiveCard = TestCards.Card(cost: 2);
+        var expensiveCard = TestCards.Card(cost: PlayerState.MaxStartingEnergy + 1);
         var playerADeck = new List<BattleCard> { expensiveCard };
         var gameState = CreateGameState(playerADeck);
         var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, expensiveCard);
@@ -219,7 +219,7 @@ public class GameStateTests
         // Assert
         Assert.False(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerA.CurrentEnergy);
         Assert.Single(gameState.PlayerA.Hand);
     }
 
@@ -227,7 +227,7 @@ public class GameStateTests
     public void DeclareDefense_CardNotAffordable_ReturnsFalse()
     {
         // Arrange
-        var expensiveCard = TestCards.Card(cost: 2);
+        var expensiveCard = TestCards.Card(cost: PlayerState.MaxStartingEnergy + 1);
         var playerBDeck = new List<BattleCard> { expensiveCard };
         var gameState = CreateGameState(playerBDeck: playerBDeck);
         var attackIntent = new DeclareAttackIntent(PlayerId.PlayerA, TestCards.Card());
@@ -241,7 +241,7 @@ public class GameStateTests
         // Assert
         Assert.False(result.Success);
         Assert.Equal(TurnPhase.ReadyToDefend, gameState.Phase);
-        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(10, gameState.PlayerB.CurrentHealth);
         Assert.Single(gameState.PlayerB.Hand);
     }
@@ -259,8 +259,8 @@ public class GameStateTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal(TurnPhase.ReadyToAttack, gameState.Phase);
-        Assert.Equal(1, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(1, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, gameState.PlayerB.CurrentEnergy);
         Assert.Equal(3, result.Events.Count);
         Assert.Equal(10, gameState.PlayerB.CurrentHealth);
         Assert.Equal(PlayerId.PlayerB, gameState.ActivePlayer);
@@ -335,10 +335,10 @@ public class GameStateTests
         Assert.Equal(PlayerId.PlayerA, gameState.ActivePlayer);
         Assert.Equal(9, gameState.PlayerA.CurrentHealth);
         Assert.Equal(9, gameState.PlayerB.CurrentHealth);
-        Assert.Equal(2, gameState.PlayerA.MaxEnergy);
-        Assert.Equal(2, gameState.PlayerB.MaxEnergy);
-        Assert.Equal(2, gameState.PlayerA.CurrentEnergy);
-        Assert.Equal(2, gameState.PlayerB.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, gameState.PlayerA.MaxEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, gameState.PlayerB.MaxEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, gameState.PlayerA.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, gameState.PlayerB.CurrentEnergy);
         Assert.Empty(gameState.PlayerA.Hand);
         Assert.Empty(gameState.PlayerB.Hand);
     }
