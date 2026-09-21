@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/CardGame.Ai/CardGame.Ai.csproj" />
+    <Project Path="src/CardGame.CardEditor/CardGame.CardEditor.csproj" />
     <Project Path="src/CardGame.Cli/CardGame.Cli.csproj" />
     <Project Path="src/CardGame.DeckManagement/CardGame.DeckManagement.csproj" />
     <Project Path="src/CardGame.Engine/CardGame.Engine.csproj" />
@@ -8,6 +9,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CardGame.Ai.Tests/CardGame.Ai.Tests.csproj" />
+    <Project Path="tests/CardGame.DeckManagement.Tests/CardGame.DeckManagement.Tests.csproj" />
     <Project Path="tests/CardGame.Engine.Tests/CardGame.Engine.Tests.csproj" />
     <Project Path="tests/CardGame.Web.Tests/CardGame.Web.Tests.csproj" />
   </Folder>

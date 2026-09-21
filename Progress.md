@@ -146,3 +146,11 @@ Dated log of what's been done. `Architecture.md` holds current state only — th
 6. Added/updated scoped CSS across `Title`, `Mulligan`, `PendingHandoffTo`, `PostMulliganHand`, `Setup`, `VictoryScreen`, and `Home`.
 7. Planned a Vs Computer mode (design doc, no engine/service changes needed — reuses existing `CardGame.Ai.Logic`).
 8. Started implementing it: `CardGame.Web` now references `CardGame.Ai`; `Title.razor` has separate Vs Human/Vs Computer buttons wired through to `Home`.
+
+## 2026-09-21
+
+1. Finished Vs Computer mode: AI auto-declines mulligan, auto-attacks/defends via `CardGame.Ai.Logic`, and the hand-off screen is skipped whenever there's no real device-passing to do (recipient is the computer, or is already the person on screen).
+2. Added a real game log: `_gameLog` list on `Home`, rendered newest-first in a fixed-height, scrollable `GameLog` component; includes attack/defend/pass/mulligan/damage messages.
+3. Reworked the play-phase layout into `PlayPhaseBoard`: a 3-column top row (game log, player info, opponent info), a compact middle row for attacking/defending status, hand on the bottom. `PlayerBoard` dissolved into it.
+4. Hand now sorts cards by cost before rendering; unplayable cards render faded.
+5. Full branch review + fixes: introduced `PlayerState.MaxStartingEnergy` (kept at 2, `CLAUDE.md` updated to match) so tests reference one constant instead of hardcoded numbers; fixed the game log recording actions that had actually failed; cleaned up a nullable-reference warning and some dead/debug code.

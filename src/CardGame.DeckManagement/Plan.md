@@ -1,0 +1,93 @@
+# Requirements
+- Easy for non-technical person to change and update cards. These changes will happen locally and should edit the text file or w/e we are suing as the card db source of truth.
+- Should be able to edit name, cost, charge, attack, defense, and image
+- Should be able to create a deck. Enforce 3 copies of each card max
+- Cards are saved as code on github (db or text file or something like that). Decks are stored in the browser. The starter deck should continue to live in code as well and be uneditable
+
+# Steps
+1. Figure out cards and storage
+2. Create simple to use ui for card editing
+3. Create deck datatypes and implement saving/loading/etc.
+4. Implement saving decks in browser
+
+# Architecture Plan
+
+## Context
+
+A Blazor WebAssembly page (`CardGame.Web`) can't write to the local
+filesystem — it's sandboxed in the browser. So the local card-editing UI
+can't be a page bolted onto `CardGame.Web`; it needs its own project running
+as a real local process.
+
+Open question, not blocking this plan: max-copies-per-deck is `3` above but
+`4` in `Architecture.md`'s Roadmap — needs a decision (and a doc fix) before
+`Deck` validation is implemented.
+
+## 1. New project: `CardGame.CardEditor` (Blazor Server, local-only)
+
+Blazor Server's C# runs as a normal local process (not browser-sandboxed like
+WASM), so it gets real file I/O for free while still being a clickable web UI
+— run via `dotnet run`, never deployed. Same Razor/Blazor knowledge already
+built up on `CardGame.Web`, just a different hosting model.
+
+Browse the catalog, edit a card's stats, pick an image file. On save: writes
+the catalog file directly to disk, and copies any newly-picked image into
+`CardGame.Web/wwwroot/images/` (has to land there — only folder the deployed
+WASM app can serve from). Publishing is the user's own `git add`/`commit`/`push`
+afterward — the tool itself never touches GitHub.
+
+## 2. Catalog data file
+
+`CardGame.Web/wwwroot/data/cards.json` — JSON: human-readable, trivial with
+`System.Text.Json`, no DB engine to stand up. Lives under `wwwroot` because
+that's the only place the deployed WASM app can fetch it from over `HttpClient`
+at runtime — `CardEditor`, being a normal process, just reads/writes the same
+path directly with plain file I/O.
+
+## 3. Shared logic: `CardGame.DeckManagement`
+
+- New `CardTemplate` record: same stats as `BattleCard` plus `ImagePath`. Not
+  `BattleCard` itself — that lives in `CardGame.Engine`, which must stay
+  presentation-agnostic. A method projects a `CardTemplate` down to a plain
+  `BattleCard` for anything handing cards to the engine — same shape
+  `StarterDeck.Templates`/`Create()` already use, just reading from the JSON
+  file instead of a hardcoded list.
+- New catalog loader: parses `cards.json` into `CardTemplate`s. One definition
+  both `CardEditor` and `CardGame.Web` reference.
+- New `Deck` type: a player's chosen cards + the copy-limit validation
+  (doesn't cleanly belong to `PlayerState`/`GameState`).
+- `StarterDeck` stays exactly as-is — code-only/uneditable per the
+  requirements above.
+
+## 4. Online side: deck builder in `CardGame.Web` (WASM, deployed)
+
+Reads the same catalog JSON already being fetched for card display. Assemble
+a legal deck (respecting `Deck`'s copy-limit check), persist it to
+`localStorage` — via `IJSRuntime` directly, or a small existing wrapper
+library (e.g. `Blazored.LocalStorage`) if avoiding hand-written JS interop is
+preferred.
+
+## 5. Tests
+
+New `CardGame.DeckManagement.Tests` project (pattern already documented in
+`README.md`'s "Add new section to tests"). Covers catalog parsing
+(`CardTemplate` → `BattleCard` projection) and `Deck`'s copy-limit validation.
+`CardEditor` and the deck-builder UI itself stay untested, same as the rest
+of the Blazor client.
+
+## Files touched
+
+- New: `src/CardGame.CardEditor/` (Blazor Server project)
+- New: `src/CardGame.Web/wwwroot/data/cards.json`
+- New: `src/CardGame.DeckManagement/CardTemplate.cs`, a catalog loader, `Deck.cs`
+- New: `tests/CardGame.DeckManagement.Tests/`
+- Modified: `src/CardGame.Web/` (deck builder UI, catalog fetch, localStorage)
+- Modified: `Architecture.md` (copy-limit number, once decided)
+
+## Verification
+
+No code written yet. Once implemented: `dotnet test` for the new
+`CardGame.DeckManagement.Tests`; manually run `CardGame.CardEditor` locally to
+add/edit a card and confirm `cards.json`/`wwwroot/images` update; run
+`CardGame.Web` and confirm the deck builder reads the updated catalog and a
+saved deck survives a page reload (`localStorage`).
