@@ -28,10 +28,12 @@
                                 <Mulligan PlayerHand="@(Game.PlayerA!.Hand)" OnSubmit="@OnMulliganChoiceClick"></Mulligan>
                                 break;
                         case Phase.Play:
-                                <OpponentInformation Stats="@GetOpponent()" AttackCard="@GetAttackingCard()" Name="@GetOpponentName()"
-                                                     PreviousAction="@_previousAction" />
-                                <PlayerBoard Stats="@GetActivePlayer()" Hand="@(GetActivePlayer().Hand)" OnCardClicked="@OnCardClicked"
-                                             PlayerName="@GetActivePlayerName()" IsAttacking="@IsActivePlayerAttacking()" />
+                                <PlayPhaseBoard PreviousAction="@_previousAction" ActivePlayerStats="@GetActivePlayer()"
+                                                ActivePlayerName="@GetActivePlayerName()" IsActivePlayerAttacking="@IsActivePlayerAttacking()"
+                                                OpponentStats="@GetOpponent()" AttackingCard="@GetAttackingCard()" OpponentName="@GetOpponentName()"
+                                                OnCardClicked="@OnCardClicked">
+                                </PlayPhaseBoard>
+                
                                 break;
                         case Phase.GameOver:
                                 <VictoryScreen WinnerName="@GetWinnerName()"></VictoryScreen>

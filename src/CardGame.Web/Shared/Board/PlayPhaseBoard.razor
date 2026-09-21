@@ -1,0 +1,35 @@
+@using CardGame.Engine
+<section>
+    <GameLog PreviousAction="@PreviousAction" />
+    <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName"
+                         PreviousAction="@PreviousAction" />
+    <PlayerBoard Stats="@ActivePlayerStats" Hand="@ActivePlayerStats.Hand" OnCardClicked="@OnCardClicked"
+                 PlayerName="@ActivePlayerName" IsAttacking="@IsActivePlayerAttacking" />
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string PreviousAction { get; set; }
+
+    [Parameter, EditorRequired]
+    public required PlayerState ActivePlayerStats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string ActivePlayerName { get; set; }
+
+    [Parameter, EditorRequired]
+    public required bool IsActivePlayerAttacking { get; set; }
+
+    [Parameter, EditorRequired]
+    public required PlayerState OpponentStats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required BattleCard AttackingCard { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string OpponentName { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<BattleCard> OnCardClicked { get; set; }
+
+}
