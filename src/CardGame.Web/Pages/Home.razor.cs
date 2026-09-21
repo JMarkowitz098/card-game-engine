@@ -21,7 +21,7 @@ public partial class Home : IDisposable
     private bool _isVsComputer;
     private string _playerAName = "";
     private string _playerBName = "";
-    private List<string> _gameLog = new();
+    private readonly List<string> _gameLog = new();
 
     protected override void OnInitialized()
     {
@@ -70,9 +70,6 @@ public partial class Home : IDisposable
         }
 
         Game.Mulligan(_activePlayerId.Value, willMulligan);
-        // _previousAction = willMulligan
-        //     ? $"{GetActivePlayerName()} mulliganed"
-        //     : $"{GetActivePlayerName()} did not mulligan";
         if (willMulligan)
         {
             _gameLog.Add($"{GetActivePlayerName()} mulliganed");
@@ -215,6 +212,7 @@ public partial class Home : IDisposable
         }
         else
         {
+            var startingHealth = Game.PlayerB.CurrentHealth;
             var incomingAttack = Game.Game!.GetPendingAttackCard()!.Attack;
             var aiCard = Logic.DeclareDefense(
                 Game.PlayerB!.Hand,
@@ -231,6 +229,13 @@ public partial class Home : IDisposable
                 _gameLog.Add($"{GetOpponentName()} passes");
             }
 
+            if (startingHealth != Game.PlayerB.CurrentHealth)
+            {
+                _gameLog.Add(
+                    $"{GetOpponentName()} takes {startingHealth - Game.PlayerB.CurrentHealth} damage"
+                );
+            }
+
             if (Game.Game!.Phase == TurnPhase.MatchEnded)
             {
                 _currentPhase = Phase.GameOver;
@@ -240,6 +245,7 @@ public partial class Home : IDisposable
 
     private void OnDeclareDefense(BattleCard Card)
     {
+        var currentDefenderHealth = GetActivePlayer().CurrentHealth;
         var result = Game.DeclareDefense(Card);
         if (Card != null)
         {
@@ -261,6 +267,13 @@ public partial class Home : IDisposable
         else if (IsComputerPending())
         {
             TakeComputerAttackTurn();
+        }
+        var newHealth = GetActivePlayer().CurrentHealth;
+        if (currentDefenderHealth != newHealth)
+        {
+            _gameLog.Add(
+                $"{GetActivePlayerName()} takes {currentDefenderHealth - newHealth} damage"
+            );
         }
     }
 }

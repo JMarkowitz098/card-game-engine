@@ -3,7 +3,7 @@
 <section>
     <h3 class="visually-hidden">Hand</h3>
     <ul>
-        @foreach (var card in Cards)
+        @foreach (var card in Cards.OrderBy(card => card.Cost))
         {
             <li>
                 <Card GameCard="@card" IsPlayable="@IsCardPlayable(card)" OnClick="@OnCardClicked" />

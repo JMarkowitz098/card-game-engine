@@ -23,6 +23,11 @@ img {
   background-color: antiquewhite;
 }
 
+.card-button.unplayable {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .card-text {
   display: flex;
   flex-direction: column;
