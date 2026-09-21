@@ -2,18 +2,16 @@
 
 <section class="opponent-info">
     <h2>@Name Information</h2>
-    <PlayerBoardInformation Stats="@Stats" />
-    <section class="placeholder">
-        <h3 class="title">Attacking Card</h3>
-        @if (AttackCard != null)
-        {
-            <Card GameCard="@AttackCard"></Card>
-        }
-    </section>
-    @* <section class="placeholder">
-        <h3 class="title">Game Log</h3>
-        <p>@PreviousAction</p>
-    </section> *@
+    <div class="player-board-attacking-card">
+        <PlayerBoardInformation Stats="@Stats" />
+        <section class="placeholder">
+            <h3 class="title">Attacking Card</h3>
+            @if (AttackCard != null)
+            {
+                <Card GameCard="@AttackCard"></Card>
+            }
+        </section>
+    </div>
 </section>
 
 @code {

@@ -1,10 +1,26 @@
 @using CardGame.Engine
 <section>
-    <GameLog PreviousAction="@PreviousAction" />
-    <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName"
-                         PreviousAction="@PreviousAction" />
-    <PlayerBoard Stats="@ActivePlayerStats" Hand="@ActivePlayerStats.Hand" OnCardClicked="@OnCardClicked"
-                 PlayerName="@ActivePlayerName" IsAttacking="@IsActivePlayerAttacking" />
+    <h2 class="visually-hidden">Player Board</h2>
+    <div class="top-row">
+        <div class="top-row-item">
+            <GameLog PreviousAction="@PreviousAction" />
+        </div>
+        <div class="top-row-item">
+            <section class="player-info-box">
+                <h2>Player Information</h2>
+                <PlayerBoardInformation Stats="@ActivePlayerStats" />
+            </section>
+        </div>
+        <div class="top-row-item">
+            <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName"
+                                 PreviousAction="@PreviousAction" />
+        </div>
+    </div>
+    <div class="middle-row">
+        <CurrentPlayerState IsAttacking="@IsActivePlayerAttacking" CurrentPlayer="@ActivePlayerName" />
+    </div>
+    <Hand Cards="@ActivePlayerStats.Hand" OnCardClicked="@OnCardClicked" IsCardPlayable="@IsCardPlayable"
+          ShowPassButton="true" />
 </section>
 
 @code {
@@ -32,4 +48,8 @@
     [Parameter, EditorRequired]
     public EventCallback<BattleCard> OnCardClicked { get; set; }
 
+    private bool IsCardPlayable(BattleCard card)
+    {
+        return card.Cost <= ActivePlayerStats.CurrentEnergy;
+    }
 }
