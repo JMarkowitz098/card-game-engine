@@ -1,0 +1,16 @@
+<section class="game-log">
+    <h3 class="title">Game Log</h3>
+    <ol>
+        @foreach (var action in @PreviousActions.Reverse())
+        {
+            <li>
+                <p>@action</p>
+            </li>
+        }
+    </ol>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> PreviousActions { get; set; }
+}

@@ -1,0 +1,54 @@
+@using CardGame.Engine
+<section>
+    <h2 class="visually-hidden">Player Board</h2>
+    <div class="top-row">
+        <div class="top-row-item">
+            <GameLog PreviousActions="@PreviousActions" />
+        </div>
+        <div class="top-row-item">
+            <section class="player-info-box">
+                <h2>Player Information</h2>
+                <PlayerBoardInformation Stats="@ActivePlayerStats" />
+            </section>
+        </div>
+        <div class="top-row-item">
+            <OpponentInformation Stats="@OpponentStats" AttackCard="@AttackingCard" Name="@OpponentName" />
+        </div>
+    </div>
+    <div class="middle-row">
+        <CurrentPlayerState IsAttacking="@IsActivePlayerAttacking" CurrentPlayer="@ActivePlayerName" />
+    </div>
+    <Hand Cards="@ActivePlayerStats.Hand" OnCardClicked="@OnCardClicked" IsCardPlayable="@IsCardPlayable"
+          ShowPassButton="true" />
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> PreviousActions { get; set; }
+
+    [Parameter, EditorRequired]
+    public required PlayerState ActivePlayerStats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string ActivePlayerName { get; set; }
+
+    [Parameter, EditorRequired]
+    public required bool IsActivePlayerAttacking { get; set; }
+
+    [Parameter, EditorRequired]
+    public required PlayerState OpponentStats { get; set; }
+
+    [Parameter, EditorRequired]
+    public required BattleCard AttackingCard { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string OpponentName { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<BattleCard> OnCardClicked { get; set; }
+
+    private bool IsCardPlayable(BattleCard card)
+    {
+        return card.Cost <= ActivePlayerStats.CurrentEnergy;
+    }
+}

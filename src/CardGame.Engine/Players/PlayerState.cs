@@ -2,9 +2,11 @@ namespace CardGame.Engine;
 
 public class PlayerState
 {
+    public const int MaxStartingEnergy = 2;
+
     public int CurrentHealth { get; private set; } = 10;
-    public int MaxEnergy { get; private set; } = 1;
-    public int CurrentEnergy { get; private set; } = 1;
+    public int MaxEnergy { get; private set; } = MaxStartingEnergy;
+    public int CurrentEnergy { get; private set; } = MaxStartingEnergy;
     public bool HasMulliganed { get; private set; }
     private readonly List<BattleCard> _hand = new();
     public IReadOnlyList<BattleCard> Hand => _hand;

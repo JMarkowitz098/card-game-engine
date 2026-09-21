@@ -1,0 +1,21 @@
+.game-log {
+  border: 1px solid black;
+  height: 20rem;
+  background-color: thistle;
+  display: flex;
+  flex-direction: column;
+}
+
+ol {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+p {
+  flex: 1;
+}
+
+h3 {
+  text-align: center;
+}

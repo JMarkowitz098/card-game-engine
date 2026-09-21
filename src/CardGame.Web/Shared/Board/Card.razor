@@ -1,6 +1,6 @@
 @using CardGame.Engine
 
-<button class="card-button" @onclick="() => OnClick.InvokeAsync(GameCard)">
+<button class="card-button @(IsPlayable ? "" : "unplayable")" @onclick="() => OnClick.InvokeAsync(GameCard)">
     <article class="card-article">
         <div class="card-text">
             <dl class="card-text-element">

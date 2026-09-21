@@ -85,8 +85,8 @@ public class PlayerStateTests
         var result = _player.IncreaseMaxEnergy(1);
 
         // Assert
-        Assert.Equal(2, _player.MaxEnergy);
-        Assert.Equal(1, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, _player.MaxEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -100,7 +100,7 @@ public class PlayerStateTests
         var result = _player.GainEnergy(1);
 
         // Assert
-        Assert.Equal(2, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -114,7 +114,7 @@ public class PlayerStateTests
         var result = _player.GainEnergy(5);
 
         // Assert
-        Assert.Equal(2, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 1, _player.CurrentEnergy);
         Assert.Equal(1, result);
     }
 
@@ -127,7 +127,7 @@ public class PlayerStateTests
         var result = _player.TryUseEnergy(1);
 
         // Assert
-        Assert.Equal(0, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy - 1, _player.CurrentEnergy);
         Assert.True(result);
     }
 
@@ -140,7 +140,7 @@ public class PlayerStateTests
         var result = _player.TryUseEnergy(5);
 
         // Assert
-        Assert.Equal(1, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy, _player.CurrentEnergy);
         Assert.False(result);
     }
 
@@ -155,7 +155,7 @@ public class PlayerStateTests
         _player.ReplenishEnergy();
 
         // Assert
-        Assert.Equal(3, _player.CurrentEnergy);
+        Assert.Equal(PlayerState.MaxStartingEnergy + 2, _player.CurrentEnergy);
         Assert.Equal(_player.MaxEnergy, _player.CurrentEnergy);
     }
 
