@@ -1,4 +1,5 @@
 using CardGame.CardEditor.Components;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,23 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+// CardGame.Web/wwwroot/images isn't part of this app's own wwwroot, so it
+// needs its own static file mapping to serve thumbnails of saved card images.
+var sharedImagesPath = Path.Combine(
+    app.Environment.ContentRootPath,
+    "..",
+    "CardGame.Web",
+    "wwwroot",
+    "images"
+);
+app.UseStaticFiles(
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(sharedImagesPath),
+        RequestPath = "/images",
+    }
+);
 
 app.UseAntiforgery();
 

@@ -1,7 +1,109 @@
-﻿@page "/"
+@page "/"
+@using CardGame.DeckManagement
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Card Editor</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Card Editor</h1>
 
-Welcome to your new app.
+@if (_errorMessage != null)
+{
+    <p class="error-message">@_errorMessage</p>
+}
+
+<div class="editor-layout">
+    @if (_isFormVisible)
+    {
+        <section class="card-form">
+            <h2>@(_editingIndex != null ? "Edit Card" : "New Card")</h2>
+            <EditForm Model="_form" OnValidSubmit="Save">
+                <div class="form-row">
+                    <label for="name">Name</label>
+                    <InputText id="name" @bind-Value="_form.Name" />
+                </div>
+                <div class="form-row">
+                    <label for="cost">Cost</label>
+                    <InputNumber id="cost" @bind-Value="_form.Cost" />
+                </div>
+                <div class="form-row">
+                    <label for="charge">Charge</label>
+                    <InputNumber id="charge" @bind-Value="_form.Charge" />
+                </div>
+                <div class="form-row">
+                    <label for="attack">Attack</label>
+                    <InputNumber id="attack" @bind-Value="_form.Attack" />
+                </div>
+                <div class="form-row">
+                    <label for="defense">Defense</label>
+                    <InputNumber id="defense" @bind-Value="_form.Defense" />
+                </div>
+                <div class="form-row">
+                    <label for="image">Image</label>
+                    <InputFile id="image" OnChange="OnImageSelected" />
+                    @if (_form.ImagePath != null)
+                    {
+                        <span class="current-image">Current: @_form.ImagePath</span>
+                    }
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="primary">Save</button>
+                    <button type="button" @onclick="CancelEdit">Cancel</button>
+                </div>
+            </EditForm>
+        </section>
+    }
+
+    <div class="table-section">
+        <table class="card-table">
+            <thead>
+                <tr>
+                    <th class="action-col"></th>
+                    <th class="thumb-col">Image</th>
+                    <th class="name-col">
+                        <button class="sort-header" @onclick="() => SortBy(NameColumn)">Name@(SortIndicator(NameColumn))</button>
+                    </th>
+                    <th class="numeric-col">
+                        <button class="sort-header" @onclick="() => SortBy(CostColumn)">Cost@(SortIndicator(CostColumn))</button>
+                    </th>
+                    <th class="numeric-col">
+                        <button class="sort-header" @onclick="() => SortBy(ChargeColumn)">Charge@(SortIndicator(ChargeColumn))</button>
+                    </th>
+                    <th class="numeric-col">
+                        <button class="sort-header" @onclick="() => SortBy(AttackColumn)">Attack@(SortIndicator(AttackColumn))</button>
+                    </th>
+                    <th class="numeric-col">
+                        <button class="sort-header" @onclick="() => SortBy(DefenseColumn)">Defense@(SortIndicator(DefenseColumn))</button>
+                    </th>
+                    <th class="action-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < _templates.Count; i++)
+                {
+                    var index = i;
+                    var template = _templates[index];
+                    <tr>
+                        <td class="action-col">
+                            <button class="row-button" @onclick="() => StartEdit(index)">Edit</button>
+                        </td>
+                        <td class="thumb-col">
+                            @if (template.ImagePath != null)
+                            {
+                                <img class="thumbnail" src="@($"/{template.ImagePath}")" alt="@template.Name" />
+                            }
+                        </td>
+                        <td class="name-col" title="@template.Name">@template.Name</td>
+                        <td class="numeric-col">@template.Cost</td>
+                        <td class="numeric-col">@template.Charge</td>
+                        <td class="numeric-col">@template.Attack</td>
+                        <td class="numeric-col">@template.Defense</td>
+                        <td class="action-col">
+                            <button class="row-button danger" @onclick="() => Delete(index)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="primary" @onclick="StartAdd">Add Card</button>
+    </div>
+</div>

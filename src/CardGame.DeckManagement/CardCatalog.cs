@@ -17,6 +17,12 @@ public static class CardCatalog
 
     public static void Save(string path, List<CardTemplate> templates)
     {
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
         var json = JsonSerializer.Serialize(templates);
         File.WriteAllText(path, json);
     }
