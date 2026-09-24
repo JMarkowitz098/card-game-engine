@@ -27,6 +27,8 @@ Open the folder in VS Code — `.vscode/settings.json` is checked in and already
 ## Commands
 ```bash
 dotnet test                             # Run all tests
+dotnet test --logger "console;verbosity=detailed" # Prints Console.WriteLine output
+dotnet test tests/CardGame.DeckManagement.Tests --filter "Test Name" # Filters by specific test
 dotnet run --project src/CardGame.Cli   # Run client
 dotnet run --project src/CardGame.Web # Run web client
 dotnet watch --no-hot-reload run --project src/CardGame.Web # Run web client (watch mode)

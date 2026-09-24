@@ -336,7 +336,6 @@ public class PlayerStateTests
         Assert.Empty(_player.DiscardPile);
     }
 
-
     [Fact]
     public void Mulligan_ReturnsFalseIfPlayerHasAlreadyMulliganed()
     {
