@@ -18,6 +18,10 @@ dl {
   min-width: 70%;
 }
 
+.deck-section form {
+    display: flex;
+}
+
 .deck-contents-section ul {
   display: flex;
 }

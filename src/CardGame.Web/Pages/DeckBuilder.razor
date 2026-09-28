@@ -14,9 +14,9 @@
                         <label class="visually-hidden" for="deck-name">Name:</label>
                         <input id="deck-name" @bind="_deckLabel" />
                     </fieldset>
-                    <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
+                    <button @onclick="@OnSaveName">Save Name</button>
                 </form>
-                <button @onclick="@OnSaveName">Save Name</button>
+                <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
             </section>
 
             @* Cards in Deck *@
