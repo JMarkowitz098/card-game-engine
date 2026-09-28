@@ -1,0 +1,61 @@
+.board {
+  display: flex;
+}
+
+.deck-section {
+  min-width: 70%;
+}
+
+.deck-contents-section ul {
+  display: flex;
+}
+
+.deck-contents-section li {
+  border: 1px solid black;
+  min-width: 3rem;
+}
+
+.deck-contents-section button {
+  min-width: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.deck-details-section {
+  display: flex;
+}
+
+.catalog {
+  min-width: 30%;
+  border: 1px solid black;
+}
+
+.catalog-details {
+  min-height: 10rem;
+  border: 1px solid black;
+}
+
+.details-plus-button{
+    padding: 0;
+    margin: 0;
+    min-width: 3rem;
+}
+
+.catalog-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: medium;
+  padding: 0.5rem;
+}
+
+.details-button {
+  min-width: 70%;
+  margin: 0;
+  flex: 1;
+}
+
+.plus-button {
+  padding: 0;
+  margin: 0;
+  min-width: 15%;
+}

@@ -126,3 +126,43 @@ saved deck survives a page reload (`localStorage`).
   step (returns the missing names alongside the resulting `BattleCard`s) and
   the builder UI (renders "Unknown card: *name*" instead of crashing on the
   lookup). No auto-removal of stale entries either place.
+
+## Deck-builder UI (decided 2026-09-24)
+
+One shared page in `CardGame.Web`, reused for both player decks and
+predefined decks — not two separate UIs. "Starter deck" and "computer deck"
+aren't structurally different things; both are just a hardcoded `Deck` that
+happens to get handed to a human or an AI. The only real distinction is
+editability: a player deck is player-editable and lives in `localStorage`; a
+predefined deck is developer-only, changed by editing code and pushing to
+git, never by a player at runtime.
+
+**Loading into the editor** — three starting points, same page either way:
+- Blank new `Deck`.
+- An existing player deck, loaded from `localStorage`.
+- An existing predefined deck, picked from the new predefined-decks
+  collection (below) and loaded into a `Deck` via its blueprint.
+
+**Editing** is identical regardless of source: browse the catalog, add/remove
+cards via `Deck.AddCard`/`RemoveCard`, same copy-limit feedback.
+
+**Saving** — two actions, not mutually exclusive in code but different
+visibility:
+- "Save" — always visible, writes the current `Deck` to `localStorage`.
+- "Export to code" — generates the deck's current contents as text (a
+  name → count list, same shape `AddCards` takes) for pasting into the
+  predefined-decks file and committing by hand. Only rendered when
+  `IWebAssemblyHostEnvironment.IsDevelopment()` is true (injectable in any
+  component; already used indirectly via `builder.HostEnvironment` in
+  `Program.cs`) — true when running locally via `dotnet run`/`dotnet watch`,
+  false on the real `dotnet publish` output the GitHub Actions deploy
+  workflow ships. Never visible on the deployed page. Worth confirming for
+  real once built — check the live deployed site genuinely doesn't render it.
+
+**Predefined-decks collection** — a single file, effectively the evolved
+`StarterDeck.cs` that `Architecture.md`'s Roadmap already predicted
+("`StarterDeck` needs renaming/reshaping... once it's the pool every deck
+gets built from"). Holds a small list of named blueprints (`Label` + a
+name → count list), with a helper that turns a chosen blueprint into a real
+`Deck` via `AddCards` — same relationship `StarterDeck.Templates`/`Create()`
+already have today, just supporting more than one named entry.

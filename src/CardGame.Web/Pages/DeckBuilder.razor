@@ -1,0 +1,80 @@
+@page "/deck-builder"
+
+<PageTitle>Deck Builder</PageTitle>
+
+<main>
+    <h1>Deck Builder</h1>
+    <div class="board">
+        <div class="deck-section">
+            @* Deck Name Edit Section *@
+            <section class="deck-details-section">
+                <form @onsubmit="@HandleSubmit" @onsubmit:preventDefault>
+                    <fieldset>
+                        <legend>Deck Name</legend>
+                        <label class="visually-hidden" for="deck-name">Name:</label>
+                        <input id="deck-name" />
+                    </fieldset>
+                    <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
+                </form>
+            </section>
+
+            @* Cards in Deck *@
+            <section class="deck-contents-section">
+                <h2>Deck Contents</h2>
+                <ul>
+                    @foreach (var (name, amount) in _deck.Cards)
+                    {
+                        @for (var i = 0; i < amount; i++)
+                        {
+                            var @card = @GetCardDetails(@name);
+                            @if (@card != null)
+                            {
+                                <li>
+                                    <p>@card.Name</p>
+                                    <p>Cost: @card.Cost </p>
+                                    <p>Charge: @card.Charge </p>
+                                    <p>Attack: @card.Attack </p>
+                                    <p>Defense: @card.Defense </p>
+                                    <button @onclick="()=> OnRemoveCard(card.Name)">Delete</button>
+                                </li>
+
+                            }
+                        }
+                    }
+                </ul>
+            </section>
+        </div>
+
+        @* Catalog *@
+        <section class="catalog">
+            <h2>Card Catalogue</h2>
+            @* Card Details *@
+            @{
+                var cardDetails = GetCardDetails(_catalogCardDetails);
+            }
+            <div class="catalog-details">
+                @if (cardDetails != null)
+                {
+                    <p>@cardDetails.Name</p>
+                    <p>Cost: @cardDetails.Cost</p>
+                    <p>Charge: @cardDetails.Charge</p>
+                    <p>Attack: @cardDetails.Attack</p>
+                    <p>Defense: @cardDetails.Defense</p>
+                    <button class="details-plus-button" @onclick="() => OnAddCard(cardDetails.Name)">+</button>
+                }
+            </div>
+
+            @* Catalgoue List *@
+            <ul>
+                @foreach (var card in _catalog)
+                {
+                    <li class="catalog-item">
+                        <button class="details-button" @onclick="() => {_catalogCardDetails = card.Name;}">@card.Name
+                            (@card.Cost/@card.Charge/@card.Attack/@card.Defense)</button>
+                            <button class="plus-button" @onclick="() => OnAddCard(card.Name)">+</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        </div>
+    </main>
