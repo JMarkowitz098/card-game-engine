@@ -12,10 +12,11 @@
                     <fieldset>
                         <legend>Deck Name</legend>
                         <label class="visually-hidden" for="deck-name">Name:</label>
-                        <input id="deck-name" />
+                        <input id="deck-name" @bind="_deckLabel" />
                     </fieldset>
                     <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
                 </form>
+                <button @onclick="@OnSaveName">Save Name</button>
             </section>
 
             @* Cards in Deck *@
@@ -31,10 +32,16 @@
                             {
                                 <li>
                                     <p>@card.Name</p>
-                                    <p>Cost: @card.Cost </p>
-                                    <p>Charge: @card.Charge </p>
-                                    <p>Attack: @card.Attack </p>
-                                    <p>Defense: @card.Defense </p>
+                                    <dl>
+                                        <dt>Cost</dt>
+                                        <dd>@card.Cost</dd>
+                                        <dt>Charge</dt>
+                                        <dd>@card.Charge</dd>
+                                        <dt>Attack</dt>
+                                        <dd>@card.Attack</dd>
+                                        <dt>Defense</dt>
+                                        <dd>@card.Defense</dd>
+                                    </dl>
                                     <button @onclick="()=> OnRemoveCard(card.Name)">Delete</button>
                                 </li>
 
@@ -56,15 +63,21 @@
                 @if (cardDetails != null)
                 {
                     <p>@cardDetails.Name</p>
-                    <p>Cost: @cardDetails.Cost</p>
-                    <p>Charge: @cardDetails.Charge</p>
-                    <p>Attack: @cardDetails.Attack</p>
-                    <p>Defense: @cardDetails.Defense</p>
+                    <dl>
+                        <dt>Cost</dt>
+                        <dd>@cardDetails.Cost</dd>
+                        <dt>Charge</dt>
+                        <dd>@cardDetails.Charge</dd>
+                        <dt>Attack</dt>
+                        <dd>@cardDetails.Attack</dd>
+                        <dt>Defense</dt>
+                        <dd>@cardDetails.Defense</dd>
+                    </dl>
                     <button class="details-plus-button" @onclick="() => OnAddCard(cardDetails.Name)">+</button>
                 }
             </div>
 
-            @* Catalgoue List *@
+            @* Catalog List *@
             <ul>
                 @foreach (var card in _catalog)
                 {
