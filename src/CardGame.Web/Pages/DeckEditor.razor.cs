@@ -1,24 +1,45 @@
 namespace CardGame.Web.Pages;
 
 using CardGame.DeckManagement;
-using CardGame.Engine;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
-public partial class DeckBuilder
+public partial class DeckEditor
 {
-    private readonly Deck _deck = new Deck();
+    private Deck _deck = new Deck();
     private string? _catalogCardDetails;
     private string? _deckLabel;
-    private readonly HttpClient _httpClient;
     private List<CardTemplate> _catalog = [];
+
+    [Parameter]
+    public Guid Id { get; set; }
 
     [Inject]
     public HttpClient Http { get; set; } = default!;
 
+    [Inject]
+    public DeckStorageService Decks { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager Nav { get; set; } = default!;
+
+    [Inject]
+    public IJSRuntime JS { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         _catalog = await CardCatalog.LoadAsync(Http, "data/cards.json");
-        _deck.Label = "Default";
+
+        var decks = await Decks.LoadDecksAsync();
+        var deck = decks.FirstOrDefault(d => d.Id == Id);
+        if (deck == null)
+        {
+            NavigateToDeckList();
+            return;
+        }
+
+        _deck = deck;
+        _deckLabel = deck.Label;
     }
 
     public void OnAddCard(string name)
@@ -42,21 +63,29 @@ public partial class DeckBuilder
         return name == null ? null : _catalog.FirstOrDefault(c => c.Name == name);
     }
 
-    public void OnSaveName()
+    public void NavigateToDeckList()
+    {
+        Nav.NavigateTo("/deck-builder");
+    }
+
+    public async Task HandleSubmitAsync()
     {
         if (_deckLabel != null)
         {
             _deck.Label = _deckLabel;
+            await Decks.SaveDeckAsync(_deck);
         }
-        Console.WriteLine($"You're decks name is now {_deck.Label}");
     }
 
-    public void HandleSubmit()
+    public async Task DeleteDeckAsync()
     {
-        Console.WriteLine($"You created the {_deck.Label} deck");
-        foreach (var card in _deck.Cards)
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Delete \"{_deck.Label}\"? This can't be undone.");
+        if (!confirmed)
         {
-            Console.WriteLine($"{card.Key}: {card.Value}");
+            return;
         }
+
+        await Decks.DeleteDeckAsync(_deck.Id);
+        NavigateToDeckList();
     }
 }

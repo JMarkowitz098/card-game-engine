@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace CardGame.DeckManagement;
 
 public class Deck
@@ -11,11 +13,12 @@ public class Deck
 
     public Deck() { }
 
-    public Deck(Guid id, string label, Dictionary<string, int> cards)
+    [JsonConstructor]
+    public Deck(Guid id, string label, IReadOnlyDictionary<string, int> cards)
     {
         Id = id;
         Label = label;
-        _cards = cards;
+        _cards = new Dictionary<string, int>(cards);
     }
 
     public bool AddCard(DeckCard card)

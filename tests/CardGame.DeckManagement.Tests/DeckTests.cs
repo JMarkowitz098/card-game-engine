@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace CardGame.DeckManagement.Tests;
 
 public class DeckTests
@@ -124,5 +126,24 @@ public class DeckTests
         Assert.Equal(3, deck.Cards["Spark"]);
         Assert.Equal(Deck.MaxCardCopies, deck.Cards["Fire"]);
         Assert.False(result);
+    }
+
+    [Fact]
+    public void Deck_SerializesAndDeserializes_PreservesIdLabelAndCards()
+    {
+        // Arrange
+        var deck = new Deck();
+        deck.Label = "My Test Deck";
+        deck.AddCard(new DeckCard("Spark", 3));
+
+        // Act
+        var json = JsonSerializer.Serialize(deck);
+        var roundTripped = JsonSerializer.Deserialize<Deck>(json);
+
+        // Assert
+        Assert.NotNull(roundTripped);
+        Assert.Equal(deck.Id, roundTripped.Id);
+        Assert.Equal(deck.Label, roundTripped.Label);
+        Assert.Equal(deck.Cards, roundTripped.Cards);
     }
 }

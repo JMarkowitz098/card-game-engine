@@ -1,0 +1,17 @@
+[
+  {
+    "Id": "2dd83e3f-4ae8-48af-a0ae-e46dbc10d057",
+    "Label": "carrot",
+    "Cards": { "Spark": 1, "Hot": 1, "Fire": 1 }
+  },
+  {
+    "Id": "534d8dac-6a84-4c7f-b122-125ea48d2470",
+    "Label": "banana",
+    "Cards": { "Fire Wall": 2, "Hot": 1, "Scorch": 1 }
+  },
+  {
+    "Id": "e19fbe43-c28b-4c82-b264-7eb63b92b1d9",
+    "Label": "orange",
+    "Cards": { "Spark": 1, "Blaze": 1, "Charge": 1 }
+  }
+]

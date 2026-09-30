@@ -1,12 +1,20 @@
+@inject NavigationManager Nav
+
 <section class="title-section">
     <img src="images/title-placeholder.jpg" alt="I am the title screen image" />
     <div>
         <button @onclick="() => OnClickStart.InvokeAsync(false)">Vs Human</button>
         <button @onclick="() => OnClickStart.InvokeAsync(true)">Vs Computer</button>
+        <button @onclick="NavigateToDeckBuilder">Deck List</button>
     </div>
 </section>
 
 @code {
     [Parameter, EditorRequired]
     public EventCallback<bool> OnClickStart { get; set; }
+
+    private void NavigateToDeckBuilder()
+    {
+        Nav.NavigateTo("/deck-builder");
+    }
 }

@@ -18,7 +18,21 @@ public class DeckStorageService
     public async Task<List<Deck>> LoadDecksAsync()
     {
         var json = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", DecksKey);
-        _decks = json == null ? [] : JsonSerializer.Deserialize<List<Deck>>(json) ?? [];
+        if (json == null)
+        {
+            _decks = [];
+            return _decks;
+        }
+
+        try
+        {
+            _decks = JsonSerializer.Deserialize<List<Deck>>(json) ?? [];
+        }
+        catch (JsonException)
+        {
+            _decks = [];
+        }
+
         return _decks;
     }
 
@@ -30,6 +44,7 @@ public class DeckStorageService
 
     public async Task SaveDeckAsync(Deck deck)
     {
+        await LoadDecksAsync(); // In case someone navigated directly to the edit page
         var existingIndex = _decks.FindIndex(d => d.Id == deck.Id);
         if (existingIndex >= 0)
         {
@@ -40,6 +55,13 @@ public class DeckStorageService
             _decks.Add(deck);
         }
 
+        await SaveDecksAsync();
+    }
+
+    public async Task DeleteDeckAsync(Guid id)
+    {
+        await LoadDecksAsync(); // In case someone navigated directly to the edit page
+        _decks.RemoveAll(d => d.Id == id);
         await SaveDecksAsync();
     }
 }

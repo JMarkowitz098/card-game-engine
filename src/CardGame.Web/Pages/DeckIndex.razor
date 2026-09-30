@@ -1,7 +1,36 @@
-namespace CardGame.Web.Pages;
+@using CardGame.DeckManagement
 
+@inject DeckStorageService Decks
+@inject NavigationManager Nav
+
+<section>
+    <ul>
+        @foreach (var deck in _decks.OrderBy(deck => deck.Label))
+        {
+            <button @onclick="() => OpenDeck(deck)">@deck.Label</button>
+        }
+    </ul>
+    <button @onclick="CreateNewDeckAsync">New Deck</button>
+</section>
 
 
 @code {
-    
+    private List<Deck> _decks = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _decks = await Decks.LoadDecksAsync();
+    }
+
+    private async Task CreateNewDeckAsync()
+    {
+        var newDeck = new Deck();
+        await Decks.SaveDeckAsync(newDeck);
+        OpenDeck(newDeck);
+    }
+
+    private void OpenDeck(Deck deck)
+    {
+        Nav.NavigateTo($"/deck-builder/{deck.Id}");
+    }
 }
