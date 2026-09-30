@@ -1,3 +1,8 @@
+@using CardGame.DeckManagement
+@using CardGame.Engine
+@inject DeckStorageService Decks
+@inject HttpClient Http
+
 <section class="setup-section">
     <h2>Game Setup</h2>
     <form @onsubmit="@HandleSubmit" @onsubmit:preventDefault>
@@ -5,31 +10,89 @@
             <legend>Player A</legend>
             <label class="visually-hidden" for="playerA">Name:</label>
             <input id="playerA" @bind="@_playerAName" />
+            <label for="deckA">Deck:</label>
+            <select id="deckA" @bind="_deckAId">
+                @foreach (var option in _deckOptions)
+                {
+                    <option value="@option.Id">@option.Label</option>
+                }
+            </select>
         </fieldset>
-        @if (!IsVsComputer)
-        {
-            <fieldset>
-                <legend>Player B</legend>
+        <fieldset>
+            <legend>@(IsVsComputer ? "Computer" : "Player B")</legend>
+            @if (!IsVsComputer)
+            {
                 <label class="visually-hidden" for="playerB">Name:</label>
                 <input id="playerB" @bind="@_playerBName" />
-            </fieldset>
-        }
+            }
+            <label for="deckB">Deck:</label>
+            <select id="deckB" @bind="_deckBId">
+                @foreach (var option in _deckOptions)
+                {
+                    <option value="@option.Id">@option.Label</option>
+                }
+            </select>
+        </fieldset>
         <button>Submit</button>
     </form>
 </section>
 
 @code {
+    private static readonly Guid StarterDeckId = Guid.Empty;
+
     private string _playerAName = "PlayerA";
     private string _playerBName = "PlayerB";
+    private List<Deck> _savedDecks = [];
+    private List<CardTemplate> _catalog = [];
+    private List<(Guid Id, string Label)> _deckOptions = [];
+    private Guid _deckAId;
+    private Guid _deckBId;
 
     [Parameter, EditorRequired]
-    public EventCallback<(string PlayerAName, string PlayerBName)> OnSubmit { get; set; }
+    public EventCallback<(
+        string PlayerAName,
+        string PlayerBName,
+        List<BattleCard> DeckA,
+        List<BattleCard> DeckB
+    )> OnSubmit { get; set; }
 
     [Parameter, EditorRequired]
     public required bool IsVsComputer { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        _catalog = await CardCatalog.LoadAsync(Http, "data/cards.json");
+        _savedDecks = await Decks.LoadDecksAsync();
+
+        _deckOptions = _savedDecks
+            .Select(d => (Id: d.Id, Label: d.Label))
+            .Append((Id: StarterDeckId, Label: "Starter Deck"))
+            .OrderBy(option => option.Label)
+            .ToList();
+
+        var defaultId = _deckOptions[0].Id;
+        _deckAId = defaultId;
+        _deckBId = defaultId;
+    }
+
+    private List<BattleCard> ResolveDeck(Guid deckId)
+    {
+        if (deckId != StarterDeckId)
+        {
+            var deck = _savedDecks.FirstOrDefault(d => d.Id == deckId);
+            if (deck != null)
+            {
+                return deck.ToBattleCards(_catalog);
+            }
+        }
+
+        return StarterDeck.Create(_catalog, copiesPerCard: 3);
+    }
+
     private async Task HandleSubmit()
     {
-        await OnSubmit.InvokeAsync((_playerAName, _playerBName));
+        var deckA = ResolveDeck(_deckAId);
+        var deckB = ResolveDeck(_deckBId);
+        await OnSubmit.InvokeAsync((_playerAName, _playerBName, deckA, deckB));
     }
 }

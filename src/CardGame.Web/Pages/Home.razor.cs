@@ -52,11 +52,13 @@ public partial class Home : IDisposable
         _currentPhase = Phase.Setup;
     }
 
-    private async Task OnSetupSubmitted((string PlayerAName, string PlayerBName) names)
+    private async Task OnSetupSubmitted(
+        (string PlayerAName, string PlayerBName, List<BattleCard> DeckA, List<BattleCard> DeckB) setup
+    )
     {
-        _playerAName = names.PlayerAName;
-        _playerBName = _isVsComputer ? "Computer" : names.PlayerBName;
-        await Game.SetupPlayers();
+        _playerAName = setup.PlayerAName;
+        _playerBName = _isVsComputer ? "Computer" : setup.PlayerBName;
+        await Game.SetupPlayers(setup.DeckA, setup.DeckB);
         _currentPhase = Phase.Mulligan;
     }
 

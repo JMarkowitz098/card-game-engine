@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using CardGame.Engine;
 
 namespace CardGame.DeckManagement;
 
@@ -73,5 +74,21 @@ public class Deck
         {
             return false;
         }
+    }
+
+    public List<BattleCard> ToBattleCards(IEnumerable<CardTemplate> catalog)
+    {
+        var result = new List<BattleCard>();
+        foreach (var (name, count) in _cards)
+        {
+            var template = catalog.FirstOrDefault(c => c.Name == name);
+            if (template == null)
+            {
+                Console.WriteLine($"Skipping \"{name}\" - not found in catalog");
+                continue;
+            }
+            result.AddRange(Enumerable.Repeat(template.ToBattleCard(), count));
+        }
+        return result;
     }
 }

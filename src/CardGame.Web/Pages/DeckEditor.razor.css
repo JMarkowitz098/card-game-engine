@@ -43,7 +43,10 @@ dl {
 
 .deck-contents-section ul {
   display: flex;
+  flex-wrap: wrap;
   list-style: none;
+  max-height: 30rem;
+  overflow-y: auto;
 }
 
 .deck-contents-section li {
@@ -66,6 +69,11 @@ dl {
 .catalog {
   min-width: 30%;
   border: 1px solid black;
+}
+
+.catalog ul {
+  max-height: 30rem;
+  overflow-y: auto;
 }
 
 .catalog-details {
