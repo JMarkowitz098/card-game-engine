@@ -77,7 +77,7 @@ CSS isolation (`<Component>.razor.css`, e.g. `Card.razor.css`) is the primary st
 
 - **Energy replenish:** at the start of *every* turn, **both** players' energy refills to their own current max — not just the active player's.
 - **Card lifecycle:** Attacking player draws card at start of turn. Cards are discarded right when used.
-- **Max copies:** a deck may contain at most 4 copies of any single card. **Not yet implemented.**
+- **Max copies:** a deck may contain at most 3 copies of any single card (`Deck.MaxCardCopies`). No total deck-size cap. Implemented.
 - **Empty deck:** drawing from an empty deck is not a loss condition (for now). Drawing multiple cards at once draws as many as are available and reports whether it completed the full requested count, without rolling back any partial draw.
 - **Charge timing:** Charge raises MaxEnergy, not current energy
 - **Declining to defend:** A player can pass instead of defending, taking full damage from the attack card
@@ -97,8 +97,8 @@ CSS isolation (`<Component>.razor.css`, e.g. `Card.razor.css`) is the primary st
 ## Assumptions
 
 - Starting Health (10) and Energy (1) are global constants.
-- Decks have 40 cards, max 4 copies of any single card.
-- Both players currently use identical decks (`StarterDeck.Create()` called twice) — every match is a mirror match until the deck builder ships.
+- No fixed deck size; max 3 copies of any single card.
+- Each player picks their own deck (a saved deck, or the built-in Starter Deck) at setup via a dropdown in `Setup.razor`.
 - **MVP card model is Cost/Charge/Attack/Defense only** — no `Element`, no special effects, no `LeaderCard`. This is a firm scope decision for this MVP, not a "waiting on playtesting" placeholder.
 
 ## Project Structure
@@ -150,8 +150,8 @@ tests/
 Toward a feature-complete MVP — rules/logic fully in place, remaining work after this is just cards, values, and card variety. Multi-week effort; in order:
 
 1. **Blazor WebAssembly front end** — core loop built end-to-end: setup → mulligan → attack/defend (hotseat hand-off replacing the console's hide/reveal flow) → victory screen. Still open: a replay/rematch option, and `Card.razor`'s `IsPlayable` isn't visually distinguished yet (the data's there, no styling difference).
-2. **Deck constraints + catalog** — enforce max 4 copies of any card per 40-card deck (likely its own small `Deck`-validation type — this doesn't cleanly belong to `PlayerState` or `GameState`); expand the card catalog beyond the current 14 themed templates. `StarterDeck` itself will need renaming/reshaping here too — once it's the pool every deck gets built from, "starter deck" won't describe it anymore. Deferred to sit right before the deck builder below, since nothing produces a candidate deck to validate until then.
-3. **Deck builder UI** — browse the catalog, assemble a legal deck, `localStorage` persistence across visits, import/export (copy/paste or download a deck list).
+2. **Deck constraints + catalog** — done. Max 3 copies of any card enforced by `Deck` (`CardGame.DeckManagement`); catalog expanded from 14 to 17 templates, editable locally via `CardGame.CardEditor`. `StarterDeck` still hasn't been renamed/reshaped now that it's one deck among many rather than the only one.
+3. **Deck builder UI** — done. Browse the catalog, assemble a legal deck, `localStorage` persistence across visits (`DeckStorageService`), multiple named decks, per-player deck selection at setup. Still open: import/export (copy/paste or download a deck list) — planned as a local-only, dev-gated button.
 4. **Deploy to GitHub Pages** — pipeline built (`.github/workflows/deploy.yml`, see Deployment); not yet confirmed live — first push was rejected for a PAT missing the `workflow` scope.
 
 Also still open, not blocking the sequence above:
