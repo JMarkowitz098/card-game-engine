@@ -9,6 +9,15 @@ public class Deck
     private readonly Dictionary<string, int> _cards = new();
     public IReadOnlyDictionary<string, int> Cards => _cards;
 
+    public Deck() { }
+
+    public Deck(Guid id, string label, Dictionary<string, int> cards)
+    {
+        Id = id;
+        Label = label;
+        _cards = cards;
+    }
+
     public bool AddCard(DeckCard card)
     {
         if (card.Amount <= 0)
