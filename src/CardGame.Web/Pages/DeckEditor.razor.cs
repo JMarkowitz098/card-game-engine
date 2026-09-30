@@ -65,7 +65,7 @@ public partial class DeckEditor
 
     public void NavigateToDeckList()
     {
-        Nav.NavigateTo("/deck-builder");
+        Nav.NavigateTo("deck-builder");
     }
 
     public async Task HandleSubmitAsync()
