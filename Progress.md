@@ -160,14 +160,21 @@ Dated log of what's been done. `Architecture.md` holds current state only — th
 
 ## 2026-09-30
 
-1. Designed and TDD'd `Deck` (`CardGame.DeckManagement`): mutable class with `Id`/`Label`, a name→copy-count dictionary, and `AddCard`/`AddCards`/`RemoveCard` — all return `bool` (matches `TryUseEnergy`/`DrawCards`-style convention), and add/remove clamp to the copy limit rather than rejecting the whole request outright.
-2. Planned the deck-builder UI: one shared page (not separate player/predefined-deck editors), player decks saved to `localStorage`, predefined decks (starter/computer — same concept, just developer-only) exported as code and committed by hand, with the export option gated behind `IWebAssemblyHostEnvironment.IsDevelopment()` so it never shows on the deployed site.
-3. Built the first real piece of it: `CardGame.Web`'s new `/deck-builder` page — browse the catalog, view a selected card's details, add/remove cards from an in-memory `Deck`, name the deck. `localStorage` persistence and the predefined-deck export are still ahead.
-4. Fixed several real bugs along the way: invalid HTML (a `<div>` wrapping an `<li>` inside a `<ul>`) and a non-interactive `<li onclick>` replaced with real buttons; a card-catalog class-name typo that silently broke its own styling; a skipped heading level; stat display moved from bare `<p>` text to `<dl>`/`<dt>`/`<dd>` (plus the recurring `dd`-margin reset, and a `display: grid` two-column layout to put each label/value pair on one row); nullable-reference honesty fixes on a couple of methods that could actually receive `null`.
-5. Fixed decks not persisting: `Deck`'s dual constructors let `System.Text.Json` silently deserialize via the parameterless one, losing `Id`/`Cards` every round-trip (confirmed via a scratch console repro) — fixed with `[JsonConstructor]`. That surfaced a follow-on `ConstructorParamIncompleteBinding` error, traced to a `Dictionary<string,int>`/`IReadOnlyDictionary<string,int>` type mismatch between the `Cards` property and the constructor parameter, plus a parameter-name self-shadowing bug (`Id = Id;`, a no-op) from an earlier failed case-sensitivity fix attempt — resolved by keeping lowercase constructor parameter names typed to match the property, copying into a fresh `Dictionary` inside the constructor.
-6. Built `DeckStorageService` (`localStorage` via `IJSRuntime`): `LoadDecksAsync`/`SaveDecksAsync`/`SaveDeckAsync`/`DeleteDeckAsync`, all read-modify-write (reload from storage first) so they're correct regardless of what page/order got you there; `LoadDecksAsync` catches malformed JSON and falls back to an empty list instead of crashing the page.
-7. Split the page into `DeckIndex` (list/create) and `DeckEditor` (`/deck-builder/{id:guid}`, redirects back to the list if the id doesn't match a saved deck); added Create New Deck, Delete (with a `confirm()` JS-interop guard), and title-screen navigation both ways. Found and fixed a `NavigateTo` bug: leading-slash paths resolve against the domain root instead of `<base href>`, which broke every deck-builder navigation specifically on the GitHub Pages deployment (subpath base href) while working fine locally.
-8. Moved deck-name saving from the button's `onclick` to the `<form>`'s `onsubmit` — a submit-type button inside a form was firing both handlers redundantly. Decided against auto-saving card add/remove; save button only.
-9. Added `Deck.ToBattleCards(catalog)` (skips and logs any card name no longer in the catalog) and wired deck selection into `Setup.razor`: a dropdown per player, including the AI opponent, always offering a "Starter Deck" option alongside saved decks, sorted together alphabetically so the default selection falls back to Starter Deck for free when no decks exist yet. `GameSessionService`'s existing `seededDeckA/B` override needed no changes.
-10. Added a `Deck` JSON round-trip regression test — would have caught #5 directly.
-11. Corrected `Architecture.md`'s stale deck rules (said max 4 copies/40-card decks; actual is max 3 copies, no size cap) and marked Roadmap items 2 and 3 done.
+1. Designed and TDD'd `Deck` (copy-limit clamping, Id/Label, add/remove).
+2. Planned the deck-builder UI and predefined-deck export approach.
+3. Built the `/deck-builder` page: browse catalog, add/remove/name a deck.
+4. Fixed various HTML, CSS, and nullable-reference issues found along the way.
+5. Fixed decks not persisting across page loads (JSON serialization bug).
+6. Built `DeckStorageService` for `localStorage` persistence.
+7. Split into `DeckIndex`/`DeckEditor` pages; added create, delete, and navigation.
+8. Switched deck saving to the form submit; decided against auto-saving card changes.
+9. Added deck-to-battle-cards conversion and per-player deck selection at game setup.
+10. Added a `Deck` serialization regression test.
+11. Corrected stale deck rules in `Architecture.md`.
+12. Declared MVP complete and wrote the v1 roadmap.
+
+## 2026-10-01
+
+1. Added minimum deck size enforcement to the setup screen's deck dropdowns.
+2. Deduplicated the dropdown rendering into a shared method.
+3. Fixed the Starter Deck's card count being hardcoded instead of computed.
