@@ -6,6 +6,7 @@ namespace CardGame.DeckManagement;
 public class Deck
 {
     public const int MaxCardCopies = 3;
+    public const int MinDeckSize = 40;
 
     public Guid Id { get; } = Guid.NewGuid();
     public string Label { get; set; } = "New Deck";

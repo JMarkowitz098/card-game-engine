@@ -12,10 +12,7 @@
             <input id="playerA" @bind="@_playerAName" />
             <label for="deckA">Deck:</label>
             <select id="deckA" @bind="_deckAId">
-                @foreach (var option in _deckOptions)
-                {
-                    <option value="@option.Id">@option.Label</option>
-                }
+                @RenderDeckOptions()
             </select>
         </fieldset>
         <fieldset>
@@ -27,10 +24,7 @@
             }
             <label for="deckB">Deck:</label>
             <select id="deckB" @bind="_deckBId">
-                @foreach (var option in _deckOptions)
-                {
-                    <option value="@option.Id">@option.Label</option>
-                }
+                @RenderDeckOptions()
             </select>
         </fieldset>
         <button>Submit</button>
@@ -44,7 +38,7 @@
     private string _playerBName = "PlayerB";
     private List<Deck> _savedDecks = [];
     private List<CardTemplate> _catalog = [];
-    private List<(Guid Id, string Label)> _deckOptions = [];
+    private List<(Guid Id, string Label, int NumCards)> _deckOptions = [];
     private Guid _deckAId;
     private Guid _deckBId;
 
@@ -54,7 +48,8 @@
         string PlayerBName,
         List<BattleCard> DeckA,
         List<BattleCard> DeckB
-    )> OnSubmit { get; set; }
+    )> OnSubmit
+    { get; set; }
 
     [Parameter, EditorRequired]
     public required bool IsVsComputer { get; set; }
@@ -65,10 +60,11 @@
         _savedDecks = await Decks.LoadDecksAsync();
 
         _deckOptions = _savedDecks
-            .Select(d => (Id: d.Id, Label: d.Label))
-            .Append((Id: StarterDeckId, Label: "Starter Deck"))
-            .OrderBy(option => option.Label)
-            .ToList();
+         .Select(d => (Id: d.Id, Label: d.Label, NumCards: d.Cards.Values.Sum()))
+         .Append((Id: StarterDeckId, Label: "Starter Deck", NumCards: _catalog.Count * 3))
+         .OrderBy(option => option.NumCards < Deck.MinDeckSize)
+         .ThenBy(option => option.Label)
+         .ToList();
 
         var defaultId = _deckOptions[0].Id;
         _deckAId = defaultId;
@@ -95,4 +91,19 @@
         var deckB = ResolveDeck(_deckBId);
         await OnSubmit.InvokeAsync((_playerAName, _playerBName, deckA, deckB));
     }
+
+    private RenderFragment RenderDeckOptions() => __builder =>
+    {
+        foreach (var option in _deckOptions)
+        {
+            if (option.NumCards < Deck.MinDeckSize)
+            {
+                <option disabled value="@option.Id">@option.Label</option>
+            }
+            else
+            {
+                <option value="@option.Id">@option.Label</option>
+            }
+        }
+    };
 }

@@ -1,4 +1,5 @@
 @page "/deck-builder/{id:guid}"
+@using CardGame.DeckManagement
 
 <div class="board">
     <button @onclick="NavigateToDeckList">Back to Deck List</button>
@@ -14,7 +15,13 @@
                 <button>Save Deck</button>
                 <button type="button" @onclick="DeleteDeckAsync">Delete Deck</button>
             </form>
-            <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
+            <div>
+                <p>Cards in Deck: @_deck.Cards.Values.Sum()</p>
+                @if (_deck.Cards.Values.Sum() < Deck.MinDeckSize)
+                {
+                    <p class="deck-warning">Must have at least @Deck.MinDeckSize cards to use</p>
+                }
+            </div>
         </section>
 
         @* Cards in Deck *@
