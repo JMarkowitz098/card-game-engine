@@ -53,12 +53,21 @@ public partial class Home : IDisposable
     }
 
     private async Task OnSetupSubmitted(
-        (string PlayerAName, string PlayerBName, List<BattleCard> DeckA, List<BattleCard> DeckB) setup
+        (
+            string PlayerAName,
+            string PlayerBName,
+            List<BattleCard> DeckA,
+            List<BattleCard> DeckB
+        ) setup
     )
     {
         _playerAName = setup.PlayerAName;
         _playerBName = _isVsComputer ? "Computer" : setup.PlayerBName;
         await Game.SetupPlayers(setup.DeckA, setup.DeckB);
+        if (_isVsComputer)
+        {
+            _activePlayerId = PlayerId.PlayerA;
+        }
         _currentPhase = Phase.Mulligan;
     }
 
