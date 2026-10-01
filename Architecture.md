@@ -147,14 +147,22 @@ tests/
 
 ## Roadmap
 
-Toward a feature-complete MVP — rules/logic fully in place, remaining work after this is just cards, values, and card variety. Multi-week effort; in order:
+MVP complete (see `Progress.md`, 2026-09-30 and earlier). Toward v1 — in order:
 
-1. **Blazor WebAssembly front end** — core loop built end-to-end: setup → mulligan → attack/defend (hotseat hand-off replacing the console's hide/reveal flow) → victory screen. Still open: a replay/rematch option, and `Card.razor`'s `IsPlayable` isn't visually distinguished yet (the data's there, no styling difference).
-2. **Deck constraints + catalog** — done. Max 3 copies of any card enforced by `Deck` (`CardGame.DeckManagement`); catalog expanded from 14 to 17 templates, editable locally via `CardGame.CardEditor`. `StarterDeck` still hasn't been renamed/reshaped now that it's one deck among many rather than the only one.
-3. **Deck builder UI** — done. Browse the catalog, assemble a legal deck, `localStorage` persistence across visits (`DeckStorageService`), multiple named decks, per-player deck selection at setup. Still open: import/export (copy/paste or download a deck list) — planned as a local-only, dev-gated button.
-4. **Deploy to GitHub Pages** — pipeline built (`.github/workflows/deploy.yml`, see Deployment); not yet confirmed live — first push was rejected for a PAT missing the `workflow` scope.
+1. Minimum deck size — undersized decks excluded from the Setup dropdown (covers the empty-deck case too).
+2. Leave-page warning during an unfinished match (matches still won't persist).
+3. Rematch option.
+4. Persistent top nav bar.
+5. Import/export button (local-only, dev-gated) for decks.
+6. Several starter/computer-only decks (needs #5).
+7. Minimally balanced card catalogue.
+8. Upgraded AI — decision tree or similar, replacing the current greedy heuristic (`CardGame.Ai.Logic`).
+9. UI updates that make game intuitive to play
+10. UI updates with basic assets.
 
 Also still open, not blocking the sequence above:
 
+- **`Card.razor`'s `IsPlayable`** isn't visually distinguished yet (the data's there, no styling difference).
+- **`StarterDeck`** hasn't been renamed/reshaped now that it's one deck among many rather than the only one.
 - **`CardInstanceId`** — gets more relevant once real deck-building means duplicate-named cards are common; the `Name`-as-identifier interim hack gets shakier.
 - **Real online multiplayer** — superseded for now by the Blazor shareable-demo plan above. If it happens later, the existing client/engine split makes it a networking change, not a rewrite.
