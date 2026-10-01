@@ -149,10 +149,10 @@ tests/
 
 MVP complete (see `Progress.md`, 2026-09-30 and earlier). Toward v1 — in order:
 
-1. Minimum deck size — undersized decks excluded from the Setup dropdown (covers the empty-deck case too).
-2. Leave-page warning during an unfinished match (matches still won't persist).
-3. Rematch option.
-4. Persistent top nav bar.
+1. Minimum deck size — undersized decks excluded from the Setup dropdown (covers the empty-deck case too) - Done
+2. Rematch option.
+3. Persistent top nav bar.
+4. Leave-page warning during an unfinished match (matches still won't persist).
 5. Import/export button (local-only, dev-gated) for decks.
 6. Several starter/computer-only decks (needs #5).
 7. Minimally balanced card catalogue.
